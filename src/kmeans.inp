@@ -1,0 +1,113 @@
+function bundle set_bundle_and_get_defaults (const list xlist,
+                                             bundle opts[null])
+    /* Compile self bundle by merging eventual information
+    from 'opts' bundle. */
+
+    if !exists(opts)
+        bundle opts = null
+    endif
+
+    bundle self = default_values(xlist)
+    self = opts + self          # override defaults
+
+    return self
+end function
+
+
+function bundle default_values (const list xlist)
+    /* Set default values. */
+
+    bundle self = null
+    scalar self.error = FALSE
+    scalar self.verbose = 1
+    string self.initializer = "random"
+    scalar self.n_init = 10
+    scalar self.max_iter = 300
+    scalar self.tolerance = 1e-4
+    string self.algorithm = "full"
+
+    return self
+end function
+
+
+function series initialize_clusters (const bundle self)
+    /* Randomly assign observations to some initial cluster.
+    return: series, Randomly assign 1 to n_cluster ID for each observation. */
+
+    if self.initializer == "random"
+        series x = randgen(i, 1, self.n_clusters)
+    else
+        funcerr "Initializer is not supported."
+    endif
+
+    return x
+end function
+
+
+function bundle kmeans (const list xlist "Features",
+                        const int n_clusters[2::2] "No. of clusters",
+                        bundle opts[null] "Parameter bundle")
+    /* Main public function. */
+
+    if !exists(opts)
+        bundle opts = null
+    endif
+
+    # TODO: Inform on how many obs got dropped
+    smpl xlist --no-missing
+
+    bundle self = set_bundle_and_get_defaults(xlist, opts)
+    strings self.names_xlist = varnames(xlist)
+    scalar self.n_clusters = n_clusters
+
+    series cluster_id = initialize_clusters(self)
+    #print xlist self.cluster_id -o
+
+    matrix c = centroids(xlist, cluster_id)
+
+    # Compute distances
+
+    # Re-assign clusters to shortest distance
+
+    return self
+end function
+
+
+
+function matrix centroids (const list xlist,
+                           const series cluster_id)
+    /* Compute centroids (means) for each cluster.
+    return: "n_clusters by 1+nelem(xlist)" matrix, The i-th row corresponds to the i-th cluster; each column refers to the centroid (mean) value for each respective feature. */
+
+    matrix m = {cluster_id} ~ {xlist}
+    scalar n_clusters = max(cluster_id)
+    matrix centroids = mshape(NA, n_clusters, nelem(xlist))
+
+    loop i=1..n_clusters
+        matrix mask = (m[,1] .= $i)
+        centroids[i,] = meanc(selifr(m[,2:], mask))
+    endloop
+
+    centroids = seq(1, n_clusters)' ~ centroids
+
+    return centroids
+end function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,14 @@
+set verbose off
+clear
+
+set assert stop
+include assertion.gfn
+
+include "./src/kmeans.inp" --force
+
+
+
+
+
+print "Finished all tests succesfully."
+quit

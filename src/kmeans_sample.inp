@@ -1,0 +1,9 @@
+clear
+set verbose off
+include "/home/at/git/kmeans/src/kmeans.inp" --force
+
+open mccullagh.gdt --quiet
+
+list x = Months Acc
+bundle model = kmeans(x, 2)
+print model

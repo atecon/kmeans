@@ -1,0 +1,15 @@
+author = Artur Tarassow
+email = atecon@posteo.de
+version = 0.1
+date = YYYY-MM-DD
+description = TBA
+tags = C13 C52
+min-version = 202XX
+public = TBA
+gui-main = OPTIONAL
+label = OPTIONAL
+menu-attachment = MAINWIN/Model/LinearModels
+help = kmeans_help.txt
+sample-script = kmeans_sample.inp
+depends = OPTIONAL
+provider = OPTIONAL
