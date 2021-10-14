@@ -1,6 +1,10 @@
 clear
 set verbose off
-include "/home/at/git/kmeans/src/kmeans.inp" --force
+if $sysinfo.hostname == "dsb"
+    include "/home/ninja/repo/kmeans/src/kmeans.inp" --force
+else
+    include "/home/at/git/kmeans/src/kmeans.inp" --force
+endif
 
 open mccullagh.gdt --quiet
 

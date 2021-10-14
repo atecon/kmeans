@@ -25,6 +25,7 @@ function bundle default_values (const list xlist)
     scalar self.max_iter = 300
     scalar self.tolerance = 1e-4
     string self.algorithm = "full"
+    string self.distance_type = "euclidean"
 
     return self
 end function
@@ -63,7 +64,7 @@ function bundle kmeans (const list xlist "Features",
     series cluster_id = initialize_clusters(self)
     #print xlist self.cluster_id -o
 
-    matrix c = centroids(xlist, cluster_id)
+    matrix centroids = centroids(xlist, cluster_id)
 
     # Compute distances
 
@@ -72,6 +73,33 @@ function bundle kmeans (const list xlist "Features",
     return self
 end function
 
+function matrix distance_euclidean ((const matrix x,
+                                     const matrix cluster_id,
+                                     const matrix centroids)
+    /* Compute the euclidean distance
+    return: type, description */
+
+    code
+
+    return variable
+end function
+
+
+function matrix distances (const list xlist,
+                           const series cluster_id,
+                           const matrix centroids,
+                           const string distance_type)
+    /* Call function for computing distances between multi-dimensional points.
+    return: type, description */
+
+    if distance_type == "euclidean"
+        matrix dist = distance_euclidean({xlist}, {cluster_id}, centroids)
+    else
+        funcerr(sprintf("Distance type '%s' not supported.", distance_type))
+    endif
+
+    return dist
+end function
 
 
 function matrix centroids (const list xlist,
