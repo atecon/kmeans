@@ -36,7 +36,7 @@ function series initialize_clusters (const bundle self)
     return: series, Randomly assign 1 to n_cluster ID for each observation. */
 
     if self.initializer == "random"
-        series x = randgen(i, 1, self.n_clusters)
+        return mrandgen(i, 1, self.n_clusters, $nobs, 1)
     else
         funcerr "Initializer is not supported."
     endif
@@ -61,39 +61,63 @@ function bundle kmeans (const list xlist "Features",
     strings self.names_xlist = varnames(xlist)
     scalar self.n_clusters = n_clusters
 
-    series cluster_id = initialize_clusters(self)
+    matrix features = {xlist}
+
+    matrix cluster_id = initialize_clusters(self)
     #print xlist self.cluster_id -o
 
-    matrix centroids = centroids(xlist, cluster_id)
+    matrix centroids = centroids(features, cluster_id)
 
     # Compute distances
+    matrix dist = distances(features, cluster_id, centroids, self.distance_type)
+    dist
+
 
     # Re-assign clusters to shortest distance
 
     return self
 end function
 
-function matrix distance_euclidean ((const matrix x,
-                                     const matrix cluster_id,
-                                     const matrix centroids)
+function matrix distance_euclidean (const matrix features,
+                                    const matrix cluster_id,
+                                    const matrix centroids)
     /* Compute the euclidean distance
     return: type, description */
 
-    code
+    scalar n_clusters = max(cluster_id)
+    matrix m = cluster_id ~ features
+    matrix new_cluster_id
 
-    return variable
+    loop i=1..n_clusters
+        matrix mask = (m[,1] .= $i)                  # select obs. from i-th cluster
+
+        matrix dist = mshape(0, sum(mask), n_clusters) # store distances
+
+        loop j=1..n_clusters        # compute distances for each centroid
+            z = selifr(m[,2:], mask) .- centroids[j, 2:] # deviations from centroids
+
+            # Scaled by the number of obs. in the i-th cluster
+            dist[,j] = sumr(z.^2) .* 1/sum(mask)
+        endloop
+
+        new_cluster_id |= iminr(dist)                   # updated cluster_id
+    endloop
+
+    # TODO: Currently this function does more than initially thought of...
+
+    return new_cluster_id
 end function
 
 
-function matrix distances (const list xlist,
-                           const series cluster_id,
+function matrix distances (const matrix features,
+                           const matrix cluster_id,
                            const matrix centroids,
                            const string distance_type)
     /* Call function for computing distances between multi-dimensional points.
     return: type, description */
 
     if distance_type == "euclidean"
-        matrix dist = distance_euclidean({xlist}, {cluster_id}, centroids)
+        matrix dist = distance_euclidean(features, cluster_id, centroids)
     else
         funcerr(sprintf("Distance type '%s' not supported.", distance_type))
     endif
@@ -102,14 +126,14 @@ function matrix distances (const list xlist,
 end function
 
 
-function matrix centroids (const list xlist,
-                           const series cluster_id)
+function matrix centroids (const matrix features,
+                           const matrix cluster_id)
     /* Compute centroids (means) for each cluster.
-    return: "n_clusters by 1+nelem(xlist)" matrix, The i-th row corresponds to the i-th cluster; each column refers to the centroid (mean) value for each respective feature. */
+    return: "n_clusters by 1+cols(features)" matrix, The i-th row corresponds to the i-th cluster; each column refers to the centroid (mean) value for each respective feature. */
 
-    matrix m = {cluster_id} ~ {xlist}
+    matrix m = cluster_id ~ features
     scalar n_clusters = max(cluster_id)
-    matrix centroids = mshape(NA, n_clusters, nelem(xlist))
+    matrix centroids = mshape(NA, n_clusters, cols(features))
 
     loop i=1..n_clusters
         matrix mask = (m[,1] .= $i)

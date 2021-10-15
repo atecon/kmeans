@@ -6,6 +6,7 @@ else
     include "/home/at/git/kmeans/src/kmeans.inp" --force
 endif
 
+set seed 1234
 open mccullagh.gdt --quiet
 
 list x = Months Acc
