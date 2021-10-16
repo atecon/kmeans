@@ -21,7 +21,7 @@ function bundle default_values (const list xlist)
     scalar self.error = FALSE
     scalar self.verbose = 1
     string self.initializer = "random"
-    scalar self.n_init = 10
+    scalar self.n_initial_draws = 10
     scalar self.max_iter = 300
     scalar self.tolerance = 1e-4
     string self.algorithm = "full"
@@ -54,70 +54,153 @@ function bundle kmeans (const list xlist "Features",
         bundle opts = null
     endif
 
-    # TODO: Inform on how many obs got dropped
-    smpl xlist --no-missing
+    errorif(sum(missing(xlist)), "Some features have missing values. Please drop these first.")
 
     bundle self = set_bundle_and_get_defaults(xlist, opts)
-    strings self.names_xlist = varnames(xlist)
-    scalar self.n_clusters = n_clusters
+    self.distance_type = tolower(self.distance_type)
+    self.initializer = tolower(self.initializer)
+    self.algorithm = tolower(self.algorithm)
 
+    scalar self.n_clusters = n_clusters
     matrix features = {xlist}
 
-    matrix cluster_id = initialize_clusters(self)
-    #print xlist self.cluster_id -o
+    self.distances_metric = $huge
+    scalar draw_id = 1
 
-    matrix centroids = centroids(features, cluster_id)
+    loop self.n_initial_draws  # evaluate several initial random draws of clusters
+        # TODO: Gets not printed, yet
+        if self.verbose
+            Info(sprintf("Start the %d-th random draw of clusters.", draw_id))
+            flush
+        endif
 
-    # Compute distances
-    matrix dist = distances(features, cluster_id, centroids, self.distance_type)
-    dist
+        bundle Tmp = compute_kmeans(self, features)
 
+        if Tmp.distances_metric < self.distances_metric # select minimizing draw
+            scalar self.distances_metric = Tmp.distances_metric
+            matrix self.centroids = Tmp.centroids
+            matrix cluster_id = Tmp.cluster_id
+            matrix distances = Tmp.distances
+        endif
 
-    # Re-assign clusters to shortest distance
+        draw_id++
+    endloop
+
+    series self.cluster_id = cluster_id
+    series self.distances = distances
 
     return self
 end function
 
-function matrix distance_euclidean (const matrix features,
-                                    const matrix cluster_id,
-                                    const matrix centroids)
-    /* Compute the euclidean distance
-    return: type, description */
 
-    scalar n_clusters = max(cluster_id)
-    matrix m = cluster_id ~ features
-    matrix new_cluster_id
+function bundle compute_kmeans (const bundle self, const matrix features)
+    /* Actual computation of kmeans. Identify clusters.
+    return: bundle, output for a given random draw of cluster association. */
 
-    loop i=1..n_clusters
-        matrix mask = (m[,1] .= $i)                  # select obs. from i-th cluster
+    bundle Model
+    matrix cluster_id = initialize_clusters(self)
+    scalar n_clusters = rows(values(cluster_id))
+    scalar iter = 1
+    matrix distances = mshape($huge, rows(features), n_clusters)
 
-        matrix dist = mshape(0, sum(mask), n_clusters) # store distances
+    loop while iter <= self.max_iter
+        matrix centroids = centroids(features, cluster_id)
+        matrix distances_new = distances(features, centroids, self.distance_type)
+        matrix cluster_id_new = iminr(distances_new)
 
-        loop j=1..n_clusters        # compute distances for each centroid
-            z = selifr(m[,2:], mask) .- centroids[j, 2:] # deviations from centroids
+        if rows(values(cluster_id_new)) == n_clusters  # check + update
+            matrix centroids = centroids(features, cluster_id_new)
+            cluster_id = cluster_id_new
+            matrix distances = distances_new
 
-            # Scaled by the number of obs. in the i-th cluster
-            dist[,j] = sumr(z.^2) .* 1/sum(mask)
-        endloop
-
-        new_cluster_id |= iminr(dist)                   # updated cluster_id
+            iter++
+        else
+            Warn(sprintf("Some assumed cluster has no observations. Stop searching after %d iterations.", iter))
+            break
+        endif
     endloop
 
-    # TODO: Currently this function does more than initially thought of...
+    # Compute final distances TODO: (really needed?)
+    #matrix distances = distances(features, centroids[,2:], self.distance_type)
+    matrix Model.distances = minr(distances)   # select minimum from all clusters for each obs.
+    scalar Model.distances_metric = sum_avg_squared_distance(distances, cluster_id)
+    matrix Model.cluster_id = cluster_id
+    matrix Model.centroids = centroids
 
-    return new_cluster_id
+    return Model
+end function
+
+
+function scalar sum_avg_squared_distance (const matrix distances,
+                                          const matrix cluster_id)
+    /* Compute the sum of the average squared distances across all clusters. */
+
+    scalar n_clusters = max(cluster_id)
+    scalar metric = 0
+
+    loop i=1..n_clusters
+        matrix mask = (cluster_id .= $i)
+        scalar n = sum(mask)
+
+        metric += sum(selifr(distances, mask)) * (1 / n)
+    endloop
+
+    return metric
+end function
+
+
+function matrix distance_euclidean (const matrix features,
+                                    const matrix centroids)
+    /* Compute the euclidean distances for each observation from all
+    centroids.
+    return: matrix, Distances for each observation (rows) and each centroid (columns). */
+
+    scalar n_centroids = rows(centroids)
+
+    # See here: https://www.dabblingbadger.com/blog/2020/2/27/implementing-euclidean-distance-matrix-calculations-from-scratch-in-python
+    D1 = sumr(features .^ 2) * ones(1, n_centroids)
+    D2 = ones($nobs, 1) * sumr(centroids .^2)'
+    D3 = 2 .* (features * centroids')
+    distances = D1 + D2 - D3
+
+    /*
+    # This yields exactly the same results - but uses a loop
+    matrix distances = mshape(NA, rows(features), n_centroids)
+    loop j=1..n_centroids               # compute distances from each centroid
+        z = features .- centroids[j,]   # deviations from centroid
+        distances[,j] = sumr(z.^2)
+    endloop
+    */
+
+    return distances
+end function
+
+
+function matrix distance_manhattan (const matrix features,
+                                    const matrix centroids)
+    /* Compute the Manhattan distances for each observation from all
+    centroids.
+    return: matrix, Distances for each observation (rows) and each centroid (columns). */
+
+    scalar n_centroids = rows(centroids)
+
+    D1 = sumr(features) * ones(1, n_centroids)
+    D2 = ones($nobs, 1) * sumr(centroids)'
+
+    return abs(D1 - D2)
 end function
 
 
 function matrix distances (const matrix features,
-                           const matrix cluster_id,
                            const matrix centroids,
                            const string distance_type)
     /* Call function for computing distances between multi-dimensional points.
     return: type, description */
 
     if distance_type == "euclidean"
-        matrix dist = distance_euclidean(features, cluster_id, centroids)
+        matrix dist = distance_euclidean(features, centroids)
+    elif distance_type == "manhattan"
+        matrix dist = distance_manhattan(features, centroids)
     else
         funcerr(sprintf("Distance type '%s' not supported.", distance_type))
     endif
@@ -131,35 +214,19 @@ function matrix centroids (const matrix features,
     /* Compute centroids (means) for each cluster.
     return: "n_clusters by 1+cols(features)" matrix, The i-th row corresponds to the i-th cluster; each column refers to the centroid (mean) value for each respective feature. */
 
-    matrix m = cluster_id ~ features
     scalar n_clusters = max(cluster_id)
     matrix centroids = mshape(NA, n_clusters, cols(features))
+    strings row_labels = array(n_clusters)
 
     loop i=1..n_clusters
-        matrix mask = (m[,1] .= $i)
-        centroids[i,] = meanc(selifr(m[,2:], mask))
+        matrix mask = (cluster_id .= $i)
+        centroids[i,] = meanc(selifr(features, mask))
+        row_labels[i] = sprintf("Cluster=%d", $i)
     endloop
 
-    centroids = seq(1, n_clusters)' ~ centroids
+    rnameset(centroids, row_labels)
 
     return centroids
 end function
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

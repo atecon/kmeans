@@ -1,14 +1,59 @@
 clear
 set verbose off
+set seed 234
+
 if $sysinfo.hostname == "dsb"
     include "/home/ninja/repo/kmeans/src/kmeans.inp" --force
 else
     include "/home/at/git/kmeans/src/kmeans.inp" --force
 endif
 
-set seed 1234
-open mccullagh.gdt --quiet
+include logging.gfn
+include PairPlot.gfn
 
-list x = Months Acc
-bundle model = kmeans(x, 2)
-print model
+EXAMPLE = 3
+
+if EXAMPLE == 1
+    open mccullagh.gdt --quiet
+
+    list x = Months Acc Type
+    n_clusters = 2
+
+elif EXAMPLE == 2
+    open credscore.gdt --quiet
+    list x = Age Income Avgexp
+    scalar n_clusters = 4
+
+elif EXAMPLE == 3
+    # NOTE: You need to install the "PairPlot" package first
+    open iris.gdt --frompkg=PairPlot --quiet
+    list x = 1..4
+    scalar n_clusters = 3
+endif
+
+smpl x --no-missing
+
+#/*
+# Euclidean distance
+# ==================
+bundle opt = _(max_iter = 300, n_initial_draws = 10)
+bundle Model = kmeans(x, n_clusters, opt)
+print Model
+
+# Plot distinct clusters
+series factor = Model.cluster_id
+bundle plot_opts = _(use_circles = FALSE, pointsize = 1.0, filename = "kmeans_euclidean.png")
+PairPlot(x, factor, plot_opts)     # with factor series
+#*/
+
+# Manhattan distance
+# ==================
+bundle opt = _(max_iter = 300, n_initial_draws = 10, distance_type = "manhattan")
+bundle Model = kmeans(x, n_clusters, opt)
+
+# Plot distinct clusters
+series factor = Model.cluster_id
+bundle plot_opts = _(use_circles = FALSE, pointsize = 1.0, filename = "kmeans_manhattan.png")
+PairPlot(x, factor, plot_opts)     # with factor series
+
+
