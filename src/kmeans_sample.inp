@@ -33,23 +33,24 @@ endif
 
 smpl x --no-missing
 
-#/*
 # Euclidean distance
 # ==================
 bundle opt = _(max_iter = 300, n_initial_draws = 10)
-bundle Model = kmeans(x, n_clusters, opt)
+bundle Model = kmeans_fit(x, n_clusters, opt)
 print Model
-
+eval Model.centroids
+stop
 # Plot distinct clusters
 series factor = Model.cluster_id
+
 bundle plot_opts = _(use_circles = FALSE, pointsize = 1.0, filename = "kmeans_euclidean.png")
 PairPlot(x, factor, plot_opts)     # with factor series
-#*/
+
 
 # Manhattan distance
 # ==================
 bundle opt = _(max_iter = 300, n_initial_draws = 10, distance_type = "manhattan")
-bundle Model = kmeans(x, n_clusters, opt)
+bundle Model = kmeans_fit(x, n_clusters, opt)
 
 # Plot distinct clusters
 series factor = Model.cluster_id

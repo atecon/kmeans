@@ -31,7 +31,7 @@ function bundle default_values (const list xlist)
 end function
 
 
-function series initialize_clusters (const bundle self)
+function matrix initialize_clusters (const bundle self)
     /* Randomly assign observations to some initial cluster.
     return: series, Randomly assign 1 to n_cluster ID for each observation. */
 
@@ -40,14 +40,12 @@ function series initialize_clusters (const bundle self)
     else
         funcerr "Initializer is not supported."
     endif
-
-    return x
 end function
 
 
-function bundle kmeans (const list xlist "Features",
-                        const int n_clusters[2::2] "No. of clusters",
-                        bundle opts[null] "Parameter bundle")
+function bundle kmeans_fit (const list xlist "Features",
+                            const int n_clusters[2::2] "No. of clusters",
+                            bundle opts[null] "Parameter bundle")
     /* Main public function. */
 
     if !exists(opts)
@@ -86,6 +84,7 @@ function bundle kmeans (const list xlist "Features",
         draw_id++
     endloop
 
+    cnameset(self.centroids, varnames(xlist))
     series self.cluster_id = cluster_id
     series self.distances = distances
 
@@ -159,7 +158,7 @@ function matrix distance_euclidean (const matrix features,
 
     # See here: https://www.dabblingbadger.com/blog/2020/2/27/implementing-euclidean-distance-matrix-calculations-from-scratch-in-python
     D1 = sumr(features .^ 2) * ones(1, n_centroids)
-    D2 = ones($nobs, 1) * sumr(centroids .^2)'
+    D2 = ones(rows(features), 1) * sumr(centroids .^2)'
     D3 = 2 .* (features * centroids')
     distances = D1 + D2 - D3
 
@@ -185,7 +184,7 @@ function matrix distance_manhattan (const matrix features,
     scalar n_centroids = rows(centroids)
 
     D1 = sumr(features) * ones(1, n_centroids)
-    D2 = ones($nobs, 1) * sumr(centroids)'
+    D2 = ones(rows(features), 1) * sumr(centroids)'
 
     return abs(D1 - D2)
 end function
@@ -221,7 +220,7 @@ function matrix centroids (const matrix features,
     loop i=1..n_clusters
         matrix mask = (cluster_id .= $i)
         centroids[i,] = meanc(selifr(features, mask))
-        row_labels[i] = sprintf("Cluster=%d", $i)
+        row_labels[i] = sprintf("Centroid=%d", $i)
     endloop
 
     rnameset(centroids, row_labels)

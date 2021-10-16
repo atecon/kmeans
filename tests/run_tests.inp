@@ -7,6 +7,140 @@ include assertion.gfn
 include "./src/kmeans.inp" --force
 
 
+nulldata 40
+
+bundles Params = null
+Params = Params + _(initializer = "random",\
+                    n_clusters = 2,\
+                    expected_values = 2,\
+                    expected_nobs = $nobs)
+Params = Params + _(initializer = "random",\
+                    n_clusters = 4,\
+                    expected_values = 4,\
+                    expected_nobs = $nobs)
+
+function void test_initialize_clusters (const bundles P)
+    print "Start testing function initialize_clusters()."
+
+    loop foreach i P
+        # Given
+        bundle Input = _(initializer = P[i].initializer,\
+                         n_clusters = P[i].n_clusters)
+
+        # When
+        matrix actual = initialize_clusters(Input)
+        scalar actual_nobs = rows(actual)
+        scalar actual_values = rows(values(actual))
+
+        # Then
+        assert(actual_nobs == P[i].expected_nobs)
+        assert(actual_values == P[i].expected_values)
+    endloop
+end function
+test_initialize_clusters(Params)
+
+
+matrix features = {0, 1, 2;\
+                   2, 3, 4;\
+                   1, 1, 1;\
+                   8, 10, 12}
+bundles Params = null
+Params = Params + _(features = features,\
+                    cluster_id = {1; 1; 2; 2},\
+                    expected_centroids = {1, 2, 3;\
+                                          4.5, 5.5, 6.5},\
+                    expected_rows_labels = defarray("Centroid=1", "Centroid=2")\
+                    )
+Params = Params + _(features = features,\
+                    cluster_id = {1; 1; 2; 3},\
+                    expected_centroids = {1, 2, 3;\
+                                          1, 1, 1;\
+                                          8, 10, 12},\
+                    expected_rows_labels = defarray("Centroid=1",\
+                                                    "Centroid=2",\
+                                                    "Centroid=3")\
+                    )
+
+function void test_centroids (const bundles P)
+    print "Start testing function centroids()."
+
+    loop foreach i P
+        # Given
+        expected_n_centroids = rows(P[i].expected_centroids)
+        expected_centroids = vec(P[i].expected_centroids)
+
+        # When
+        matrix actual = centroids(P[i].features, P[i].cluster_id)
+        strings actual_row_labels = rnameget(actual)
+        scalar actual_n_centroids = rows(actual)
+        actual = vec(actual)
+
+        # Then
+        loop j=1..rows(actual)
+            assert(actual[j] == expected_centroids[j])
+        endloop
+
+        loop j=1..nelem(P[i].expected_rows_labels)
+            assert(actual_row_labels[j] == P[i].expected_rows_labels[j])
+        endloop
+    endloop
+end function
+test_centroids(Params)
+
+
+function void test_distances (void)
+    print "Start testing function distances()"
+
+    # Given
+    matrix features = mnormal(2, 2)
+    matrix centroids = mnormal(2, 2)
+    string distance_type = "foo"
+    scalar expected_error = 47
+
+    # When
+    catch actual = distances(features, centroids, distance_type)
+    actual_error = $error
+
+    # Then
+    assert(actual_error == expected_error)
+end function
+test_distances()
+
+
+
+
+matrix features = {0, 1, 2;\
+                   2, 3, 4;\
+                   1, 1, 1;\
+                   8, 10, 12}
+bundles Params = null
+Params = Params + _(features = features,\
+                    centroids = {1, 2, 3;\
+                                 4.5, 5.5, 6.5},\
+                    expected_distances = \
+                    )
+Params = Params + _(features = features,\
+                    centroids = {1, 2, 3;\
+                                  1, 1, 1;\
+                                  8, 10, 12},\
+                    expected_distances = \
+                    )
+
+function void test_name (const bundles P, args)
+    print "Start testing function name()."
+
+    loop foreach i P
+        # Given
+        given
+
+        # When
+        when
+
+        # Then
+        then
+    endloop
+end function
+test_name(Params, args)
 
 
 
