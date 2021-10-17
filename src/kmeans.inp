@@ -152,20 +152,21 @@ function matrix distance_euclidean (const matrix features,
                                     const matrix centroids)
     /* Compute the euclidean distances for each observation from all
     centroids.
-    return: matrix, Distances for each observation (rows) and each centroid (columns). */
+    See here: https://www.dabblingbadger.com/blog/2020/2/27/implementing-euclidean-distance-matrix-calculations-from-scratch-in-python
 
-    scalar n_centroids = rows(centroids)
+    return: matrix, Distances for each observation (rows) and each clusters' centroid. */
 
-    # See here: https://www.dabblingbadger.com/blog/2020/2/27/implementing-euclidean-distance-matrix-calculations-from-scratch-in-python
-    D1 = sumr(features .^ 2) * ones(1, n_centroids)
+    scalar n_clusters = rows(centroids)
+
+    D1 = sumr(features .^ 2) * ones(1, n_clusters)
     D2 = ones(rows(features), 1) * sumr(centroids .^2)'
     D3 = 2 .* (features * centroids')
     distances = D1 + D2 - D3
 
     /*
     # This yields exactly the same results - but uses a loop
-    matrix distances = mshape(NA, rows(features), n_centroids)
-    loop j=1..n_centroids               # compute distances from each centroid
+    matrix distances = mshape(NA, rows(features), n_clusters)
+    loop j=1..n_clusters               # compute distances from each centroid
         z = features .- centroids[j,]   # deviations from centroid
         distances[,j] = sumr(z.^2)
     endloop
@@ -181,9 +182,9 @@ function matrix distance_manhattan (const matrix features,
     centroids.
     return: matrix, Distances for each observation (rows) and each centroid (columns). */
 
-    scalar n_centroids = rows(centroids)
+    scalar n_clusters = rows(centroids)
 
-    D1 = sumr(features) * ones(1, n_centroids)
+    D1 = sumr(features) * ones(1, n_clusters)
     D2 = ones(rows(features), 1) * sumr(centroids)'
 
     return abs(D1 - D2)
