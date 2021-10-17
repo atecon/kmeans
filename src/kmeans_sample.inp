@@ -8,7 +8,8 @@ else
     include "/home/at/git/kmeans/src/kmeans.inp" --force
 endif
 
-include logging.gfn
+include distances.gfn   # TODO: Dependency
+include logging.gfn     # TODO: Dependency
 include PairPlot.gfn
 
 EXAMPLE = 3
@@ -22,13 +23,13 @@ if EXAMPLE == 1
 elif EXAMPLE == 2
     open credscore.gdt --quiet
     list x = Age Income Avgexp
-    scalar n_clusters = 4
+    scalar n_clusters = 3
 
 elif EXAMPLE == 3
     # NOTE: You need to install the "PairPlot" package first
     open iris.gdt --frompkg=PairPlot --quiet
     list x = 1..4
-    scalar n_clusters = 3
+    scalar n_clusters = 5
 endif
 
 smpl x --no-missing
@@ -39,10 +40,15 @@ bundle opt = _(max_iter = 300, n_initial_draws = 10)
 bundle Model = kmeans_fit(x, n_clusters, opt)
 print Model
 eval Model.centroids
+
+series fc_cluster = kmeans_predict(x, Model)
+series cluster_id = Model.cluster_id # must equal fc_cluster
+series distances = Model.distances
+print distances cluster_id fc_cluster -o
 stop
+
 # Plot distinct clusters
 series factor = Model.cluster_id
-
 bundle plot_opts = _(use_circles = FALSE, pointsize = 1.0, filename = "kmeans_euclidean.png")
 PairPlot(x, factor, plot_opts)     # with factor series
 
