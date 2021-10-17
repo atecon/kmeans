@@ -174,29 +174,27 @@ end function
 
 
 matrix features1 = {0; 1}
-
-Params = null
 Params = Params + _(features = features1,\
                     centroids = features1,\
                     expected_distances = {0, 1; 1, 0}\
                     )
-
-Params = Params + _(features = features1,\
-                    centroids = {0, 0},\
-                    expected_distances = {1; 1.4}\
-                    )
-
+eval Params[1].features
+stop
 function void test_distance_euclidean (const bundles P)
     print "Start testing function distance_euclidean()."
 
     loop foreach i P
         # Given
+        eval P[i].features
+        eval P[i].centroids
+        #stop
         matrix expected_distances = vec(P[i].expected_distances)
 
         # When
         matrix actual = distance_euclidean(P[i].features, P[i].centroids)
         actual = vec(actual)
         actual
+        stop
 
         # Then
         loop j=1..rows(expected_distances)
