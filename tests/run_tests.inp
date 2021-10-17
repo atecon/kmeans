@@ -140,7 +140,40 @@ function void test_name (const bundles P, args)
         then
     endloop
 end function
-test_name(Params, args)
+#test_distance_manhattan(Params)
+
+
+bundles Params = null
+matrix features1 = {0; 1}
+Params = Params + _(features = features1,\
+                    centroids = features1,\
+                    expected_distances = {0, 1; 1, 0}\
+                    )
+
+Params = Params + _(features = features1,\
+                    centroids = {0; 0},\
+                    expected_distances = {0, 0}\
+                    )
+
+function void test_distance_euclidean (const bundles P)
+    print "Start testing function distance_euclidean()."
+
+    loop foreach i P
+        # Given
+        matrix expected_distances = vec(P[i].expected_distances)
+
+        # When
+        matrix actual = distance_euclidean(P[i].features, P[i].centroids)
+        actual = vec(actual)
+        actual
+
+        # Then
+        loop j=1..rows(expected_distances)
+            assert(actual[j] == expected_distances[j])
+        endloop
+    endloop
+end function
+test_distance_euclidean(Params)
 
 
 
