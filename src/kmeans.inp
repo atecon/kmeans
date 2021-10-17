@@ -187,6 +187,10 @@ function matrix distance_manhattan (const matrix features,
     D1 = sumr(features) * ones(1, n_clusters)
     D2 = ones(rows(features), 1) * sumr(centroids)'
 
+    #print D1 D2
+    #eval abs(D1 - D2)
+    #stop
+
     return abs(D1 - D2)
 end function
 
