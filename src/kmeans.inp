@@ -168,6 +168,7 @@ function matrix distances (const matrix features,
     /* Call function for computing distances between multi-dimensional points.
     return: type, description */
 
+    # TODO: Make use of feval(). In future every available distance function may be called
     if distance_type == "euclidean"
         matrix dist = distance_euclidean(features, centroids)
     elif distance_type == "manhattan"

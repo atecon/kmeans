@@ -29,7 +29,7 @@ elif EXAMPLE == 3
     # NOTE: You need to install the "PairPlot" package first
     open iris.gdt --frompkg=PairPlot --quiet
     list x = 1..4
-    scalar n_clusters = 5
+    scalar n_clusters = 3
 endif
 
 smpl x --no-missing
@@ -45,7 +45,7 @@ series fc_cluster = kmeans_predict(x, Model)
 series cluster_id = Model.cluster_id # must equal fc_cluster
 series distances = Model.distances
 print distances cluster_id fc_cluster -o
-stop
+
 
 # Plot distinct clusters
 series factor = Model.cluster_id
