@@ -21,7 +21,7 @@ function bundle default_values (const list xlist)
     scalar self.error = FALSE
     scalar self.verbose = 1
     string self.initializer = "random"
-    scalar self.n_initial_draws = 10
+    scalar self.n_draws = 10
     scalar self.max_iter = 300
     scalar self.tolerance = 1e-4
     string self.algorithm = "full"
@@ -79,7 +79,7 @@ function bundle kmeans_fit (const list xlist "Features",
     self.distances_metric = $huge
     scalar draw_id = 1
 
-    loop self.n_initial_draws  # evaluate several initial random draws of clusters
+    loop self.n_draws  # evaluate several initial random draws of clusters
         # TODO: Gets not printed, yet
         if self.verbose
             Info(sprintf("Start the %d-th random draw of clusters.", draw_id))
@@ -103,6 +103,26 @@ function bundle kmeans_fit (const list xlist "Features",
     series self.distances = distances
 
     return self
+end function
+
+
+function void kmeans_summary (const bundle self)
+    /* Print summary after fitting. */
+
+    print "***************************************"
+    print "*** K-means unsupervised clustering ***"
+
+    printf "\nParameters\n"
+    printf "  No. of clusters: %d\n", self.n_clusters
+    printf "  Distance type: '%s'\n", self.distance_type
+    printf "  Algorithm: '%s'\n", self.algorithm
+    printf "  Max. iterations: %d\n", self.max_iter
+    #printf "  Actual iterations: %d\n", self.actual_iter
+    printf "  No. of draws: %d\n", self.n_draws
+
+    printf "\nEstimation results:\n"
+    printf "  Estimated distance: %.3f\n", self.distances_metric
+    printf "***************************************\n"
 end function
 
 
