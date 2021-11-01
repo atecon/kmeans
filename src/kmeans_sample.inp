@@ -8,7 +8,6 @@ else
     include "/home/at/git/kmeans/src/kmeans.inp" --force
 endif
 
-include distances.gfn   # TODO: Dependency
 include logging.gfn     # TODO: Dependency
 include PairPlot.gfn
 

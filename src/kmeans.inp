@@ -50,7 +50,7 @@ function series kmeans_predict (const list xlist "Features",
 
     errorif(sum(missing(xlist)), "Some features have missing values. Please drop these first.")
 
-    matrix distances = distances({xlist}, Model.centroids, Model.distance_type)
+    matrix distances = distance({xlist}, Model.distance_type, Model.centroids)
     series cluster_id = iminr(distances)
 
     return cluster_id
@@ -138,7 +138,8 @@ function bundle compute_kmeans (const bundle self, const matrix features)
 
     loop while iter <= self.max_iter
         matrix centroids = centroids(features, cluster_id)
-        matrix distances_new = distances(features, centroids, self.distance_type)
+        #matrix distances_new = distance(features, centroids, self.distance_type)
+        matrix distances_new = distance(features, self.distance_type, centroids)
         matrix cluster_id_new = iminr(distances_new)
 
         if rows(values(cluster_id_new)) == n_clusters  # check + update
@@ -179,25 +180,6 @@ function scalar sum_avg_squared_distance (const matrix distances,
     endloop
 
     return metric
-end function
-
-
-function matrix distances (const matrix features,
-                           const matrix centroids,
-                           const string distance_type)
-    /* Call function for computing distances between multi-dimensional points.
-    return: type, description */
-
-    # TODO: Make use of feval(). In future every available distance function may be called
-    if distance_type == "euclidean"
-        matrix dist = distance_euclidean(features, centroids)
-    elif distance_type == "manhattan"
-        matrix dist = distance_manhattan(features, centroids)
-    else
-        funcerr(sprintf("Distance type '%s' not supported.", distance_type))
-    endif
-
-    return dist
 end function
 
 

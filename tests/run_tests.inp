@@ -88,26 +88,6 @@ end function
 test_centroids(Params)
 
 
-function void test_distances (void)
-    print "Start testing function distances()"
-
-    # Given
-    matrix features = mnormal(2, 2)
-    matrix centroids = mnormal(2, 2)
-    string distance_type = "foo"
-    scalar expected_error = 47
-
-    # When
-    catch actual = distances(features, centroids, distance_type)
-    actual_error = $error
-
-    # Then
-    assert(actual_error == expected_error)
-end function
-test_distances()
-
-
-
 
 
 print "Finished all tests succesfully."
