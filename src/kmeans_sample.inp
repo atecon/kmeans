@@ -1,17 +1,11 @@
 clear
 set verbose off
-set seed 234
+set seed 1234
 
-if $sysinfo.hostname == "dsb"
-    include "/home/ninja/repo/kmeans/src/kmeans.inp" --force
-else
-    include "/home/at/git/kmeans/src/kmeans.inp" --force
-endif
+include kmeans.gfn
 
-include logging.gfn     # TODO: Dependency
-include PairPlot.gfn
-
-EXAMPLE = 3
+# Select an example to run
+EXAMPLE = 2
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -33,36 +27,36 @@ endif
 
 smpl x --no-missing
 
-# Euclidean distance
-# ==================
-bundle opt = _(max_iter = 300, n_draws = 10)
-bundle Model = kmeans_fit(x, n_clusters, opt)
+# Euclidean distance (default)
+# ============================
+bundle Model = kmeans_fit(x, n_clusters)
 print Model
 eval Model.centroids
 
-kmeans_summary(Model)
-
+kmeans_summary(Model)  # Print summary of estimation
 
 series fc_cluster = kmeans_predict(x, Model)
-series cluster_id = Model.cluster_id # must equal fc_cluster
+series cluster_id = Model.cluster_id  # must equal "fc_cluster"
 series distances = Model.distances
 print distances cluster_id fc_cluster -o
 
+# Plot distinct clusters for each variable combination in 2D
+kmeans_plot(x, Model)
 
-# Plot distinct clusters
-series factor = Model.cluster_id
-bundle plot_opts = _(use_circles = FALSE, pointsize = 0.25, filename = "kmeans_euclidean.png")
-PairPlot(x, factor, plot_opts)     # with factor series
+/* You can also manipulate the plot if wanted:
+Model.use_circles = TRUE
+Model.pointsize = 0.25
+Model.filename = "foo2.png"     # pass filename for storing plot
+kmeans_plot(x, Model)
+*/
 
 
 # Manhattan distance
 # ==================
-bundle opt = _(max_iter = 300, n_draws = 10, distance_type = "manhattan")
-bundle Model = kmeans_fit(x, n_clusters, opt)
+# Pass some user-defined parameter values, too
+bundle opt = _(max_iter = 100, n_draws = 20, distance_type = "manhattan")
+bundle Model = kmeans_fit(x, 4, opt)
 
 # Plot distinct clusters
-series factor = Model.cluster_id
-bundle plot_opts = _(use_circles = FALSE, pointsize = 1.0, filename = "kmeans_manhattan.png")
-PairPlot(x, factor, plot_opts)     # with factor series
-
+kmeans_plot(x, Model)
 

@@ -27,6 +27,10 @@ function bundle default_values (const list xlist)
     string self.algorithm = "full"
     string self.distance_type = "euclidean"
 
+    # For kmeans_plot()
+    scalar self.use_circles = FALSE
+    scalar self.pointsize = 1.0
+
     return self
 end function
 
@@ -80,12 +84,6 @@ function bundle kmeans_fit (const list xlist "Features",
     scalar draw_id = 1
 
     loop self.n_draws  # evaluate several initial random draws of clusters
-        # TODO: Gets not printed, yet
-        if self.verbose
-            Info(sprintf("Start the %d-th random draw of clusters.", draw_id))
-            flush
-        endif
-
         bundle Tmp = compute_kmeans(self, features)
 
         if Tmp.distances_metric < self.distances_metric # select minimizing draw
@@ -118,11 +116,26 @@ function void kmeans_summary (const bundle self)
     printf "  Algorithm: '%s'\n", self.algorithm
     printf "  Max. iterations: %d\n", self.max_iter
     #printf "  Actual iterations: %d\n", self.actual_iter
-    printf "  No. of draws: %d\n", self.n_draws
+    printf "  No. of random draws: %d\n", self.n_draws
 
     printf "\nEstimation results:\n"
     printf "  Estimated distance: %.3f\n", self.distances_metric
     printf "***************************************\n"
+end function
+
+
+function void kmeans_plot (const list xlist, bundle self[null])
+    /* Plot clusters in 2-dimensions. */
+
+    if !exists(PlotOpts)
+        bundle PlotOpts = null
+    endif
+
+    PlotOpts = PlotOpts + self          # override defaults
+    string PlotOpts.filename = inbundle(PlotOpts, "filename") ? PlotOpts.filename : "display"
+    series factor = self.cluster_id
+
+    PairPlot(xlist, factor, PlotOpts)
 end function
 
 
@@ -138,7 +151,6 @@ function bundle compute_kmeans (const bundle self, const matrix features)
 
     loop while iter <= self.max_iter
         matrix centroids = centroids(features, cluster_id)
-        #matrix distances_new = distance(features, centroids, self.distance_type)
         matrix distances_new = distance(features, self.distance_type, centroids)
         matrix cluster_id_new = iminr(distances_new)
 
@@ -155,7 +167,7 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     endloop
 
     # Compute final distances TODO: (really needed?)
-    #matrix distances = distances(features, centroids[,2:], self.distance_type)
+    #matrix distances = distance(features, self.distance_type, centroids[,2:])
     matrix Model.distances = minr(distances)   # select minimum from all clusters for each obs.
     scalar Model.distances_metric = sum_avg_squared_distance(distances, cluster_id)
     matrix Model.cluster_id = cluster_id
@@ -202,5 +214,3 @@ function matrix centroids (const matrix features,
 
     return centroids
 end function
-
-
