@@ -43,10 +43,9 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                 verbose:     int, Print details (0: don't print anything,
                              1: print some details, 2: print more details
                              (default: 0))
-                initializer: str, Method for initialization. Currently only
-                             &quot;random&quot; is supported (choose n_clusters
-                             observations (rows) at random from data for the
-                             initial centroids)
+                initializer: str, Method for initialization.
+                             &quot;random&quot;: Choose n_clusters observations (rows) at
+                             random from data for the initial centroids
                 n_draws:     int, Number of time the kmeans algorithm will be
                              run with different centroid seeds. The final
                              results will be the best output of n_draws
@@ -281,16 +280,34 @@ return self
 </code>
 </gretl-function>
 <gretl-function name="initialize_clusters" type="matrix" private="1">
- <params count="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
   <param name="self" type="bundle" const="true"/>
  </params>
 <code>/* Randomly assign observations to some initial cluster.
 return: series, Randomly assign 1 to n_cluster ID for each observation. */
 if self.initializer == &quot;random&quot;
   return mrandgen(i, 1, self.n_clusters, $nobs, 1)
+  #elif tolower(self.initializer) == &quot;pca&quot;
+  #return init_pca(features, self.n_clusters)
 else
   funcerr &quot;Initializer is not supported.&quot;
 endif
+</code>
+</gretl-function>
+<gretl-function name="init_pca" type="matrix" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="n_clusters" type="scalar"/>
+ </params>
+<code>/* Try to pick data points that are as far apart as possible by means of PCA. Idea borrowed from Jack Lucchetti.
+return: Matrix of centroids for each cluster (rows) and each feature (columns). */
+scalar n = rows(features)
+matrix mask = 1 + seq(0, (n_clusters - 1)) * floor((n - 1) / (n_clusters - 1))
+matrix f = princomp(features, 1, 1) ~ seq(1, n)'
+f = msortby(f, 1)
+mask = f[mask, 2]
+return features[mask,]
 </code>
 </gretl-function>
 <gretl-function name="add_variations" type="void" private="1">
@@ -316,7 +333,7 @@ scalar self.between_to_total_variation = self.between_variation / self.total_ssq
 <code>/* Actual computation of kmeans. Identify clusters.
 return: bundle, output for a given random draw of cluster association. */
 bundle Model
-matrix cluster_id = initialize_clusters(self)
+matrix cluster_id = initialize_clusters(features, self)
 scalar n_clusters = rows(values(cluster_id))
 scalar iter = 1
 matrix distances = mshape($huge, rows(features), n_clusters)
@@ -398,7 +415,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 1
+EXAMPLE = 3
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -424,17 +441,18 @@ smpl x --no-missing
 # ============================
 bundle Model = kmeans_fit(x, n_clusters)
 print Model
-eval Model.centroids
+eval Model.centroids   # print matrix of centroids
 
 kmeans_summary(Model)  # Print summary of estimation
 
-series fc_cluster = kmeans_predict(x, Model)
-series cluster_id = Model.cluster_id  # must equal &quot;fc_cluster&quot;
+series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
+series cluster_id = Model.cluster_id          # must equal &quot;fc_cluster&quot;
 series distances = Model.distances
 print distances cluster_id fc_cluster -o --range=1:15
 
 # Plot distinct clusters for each variable combination in 2D
 kmeans_plot(x, Model)
+
 
 /* You can also manipulate the plot if wanted:
 Model.use_circles = TRUE

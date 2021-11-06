@@ -35,15 +35,32 @@ function bundle default_values (const list xlist)
 end function
 
 
-function matrix initialize_clusters (const bundle self)
+function matrix initialize_clusters (const matrix features, const bundle self)
     /* Randomly assign observations to some initial cluster.
     return: series, Randomly assign 1 to n_cluster ID for each observation. */
 
     if self.initializer == "random"
         return mrandgen(i, 1, self.n_clusters, $nobs, 1)
+    #elif tolower(self.initializer) == "pca"
+        #return init_pca(features, self.n_clusters)
     else
         funcerr "Initializer is not supported."
     endif
+end function
+
+
+function matrix init_pca (const matrix features, scalar n_clusters)
+    /* Try to pick data points that are as far apart as possible by means of PCA. Idea borrowed from Jack Lucchetti.
+    return: Matrix of centroids for each cluster (rows) and each feature (columns). */
+
+    scalar n = rows(features)
+    matrix mask = 1 + seq(0, (n_clusters - 1)) \
+                  * floor((n - 1) / (n_clusters - 1))
+    matrix f = princomp(features, 1, 1) ~ seq(1, n)'
+    f = msortby(f, 1)
+    mask = f[mask, 2]
+
+    return features[mask,]
 end function
 
 
@@ -174,7 +191,7 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     return: bundle, output for a given random draw of cluster association. */
 
     bundle Model
-    matrix cluster_id = initialize_clusters(self)
+    matrix cluster_id = initialize_clusters(features, self)
     scalar n_clusters = rows(values(cluster_id))
     scalar iter = 1
     matrix distances = mshape($huge, rows(features), n_clusters)

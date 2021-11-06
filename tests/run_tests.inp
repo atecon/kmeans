@@ -8,6 +8,11 @@ include "./src/kmeans.inp" --force
 include distances.gfn
 
 nulldata 40
+matrix m = mnormal($nobs, 6)
+list L = null
+loop i=1..cols(m)
+    L += genseries(sprintf("v%d", $i), m[,i])
+endloop
 
 bundles Params = null
 Params = Params + _(initializer = "random",\
@@ -19,8 +24,10 @@ Params = Params + _(initializer = "random",\
                     expected_values = 4,\
                     expected_nobs = $nobs)
 
-function void test_initialize_clusters (const bundles P)
+function void test_initialize_clusters (const list L, const bundles P)
     print "Start testing function initialize_clusters()."
+
+    matrix x = {L}
 
     loop foreach i P
         # Given
@@ -28,8 +35,9 @@ function void test_initialize_clusters (const bundles P)
                          n_clusters = P[i].n_clusters)
 
         # When
-        matrix actual = initialize_clusters(Input)
+        matrix actual = initialize_clusters(x, Input)
         scalar actual_nobs = rows(actual)
+
         scalar actual_values = rows(values(actual))
 
         # Then
@@ -37,7 +45,8 @@ function void test_initialize_clusters (const bundles P)
         assert(actual_values == P[i].expected_values)
     endloop
 end function
-test_initialize_clusters(Params)
+test_initialize_clusters(L, Params)
+
 
 
 matrix features = {0, 1, 2;\

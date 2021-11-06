@@ -4,7 +4,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 1
+EXAMPLE = 3
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -30,17 +30,18 @@ smpl x --no-missing
 # ============================
 bundle Model = kmeans_fit(x, n_clusters)
 print Model
-eval Model.centroids
+eval Model.centroids   # print matrix of centroids
 
 kmeans_summary(Model)  # Print summary of estimation
 
-series fc_cluster = kmeans_predict(x, Model)
-series cluster_id = Model.cluster_id  # must equal "fc_cluster"
+series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
+series cluster_id = Model.cluster_id          # must equal "fc_cluster"
 series distances = Model.distances
 print distances cluster_id fc_cluster -o --range=1:15
 
 # Plot distinct clusters for each variable combination in 2D
 kmeans_plot(x, Model)
+
 
 /* You can also manipulate the plot if wanted:
 Model.use_circles = TRUE

@@ -34,10 +34,9 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                 verbose:     int, Print details (0: don't print anything,
                              1: print some details, 2: print more details
                              (default: 0))
-                initializer: str, Method for initialization. Currently only
-                             "random" is supported (choose n_clusters
-                             observations (rows) at random from data for the
-                             initial centroids)
+                initializer: str, Method for initialization.
+                             "random": Choose n_clusters observations (rows) at
+                             random from data for the initial centroids
                 n_draws:     int, Number of time the kmeans algorithm will be
                              run with different centroid seeds. The final
                              results will be the best output of n_draws
