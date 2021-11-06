@@ -89,6 +89,86 @@ test_centroids(Params)
 
 
 
+set seed 12345
+nulldata 256
+scalar n_clusters = 3
+
+
+function list build_dataset (const int n_clusters)
+    /* Compile example dataset. */
+
+    true = randgen(i, 1, n_clusters)
+    nvar = 4
+    m = 2 * mnormal(nvar, n_clusters)
+
+    list X = null
+    loop i = 1..nvar
+        x$i = normal() + replace(true, seq(1, n_clusters), m[i,])
+        X += x$i
+    endloop
+
+    return X
+end function
+
+function void test_kmeans_fit (const int n_clusters)
+    print "Start testing function kmeans_fit()"
+
+    # Given
+    /*
+    We compare against R
+    columns = sprintf("3:%d\n", nvar+2)
+    kstr = sprintf("%d", nc)
+    foreign language=R --send-data
+        # install.packages("stats")
+        X = gretldata[,@columns];
+        moo <- kmeans(X, @kstr);
+        sort(moo$centers)
+        moo$totss
+        moo$withinss
+        moo$tot.withinss
+        moo$betweenss
+        summary(moo);
+        Rc <- moo$cluster;
+        write.csv(Rc, "/home/at/tmp/Rc.csv");
+    end foreign
+    append "/home/at/tmp/Rc.csv"
+    */
+    list X = build_dataset(n_clusters)  # seed: 12345
+    matrix expected_centroids = {-2.8677786, -1.9345555, -1.2045900,\
+                                 -0.8192810, -0.7823773, -0.3894463,\
+                                 -0.2751224, 0.0771022, 0.5879314,\
+                                 0.8713725, 1.9103342, 1.9711367}'
+    scalar expected_total_ssq = 2761.064
+    scalar expected_within_variation_total = 980.3286
+    scalar expected_between_variation = 1780.735
+
+    # When
+    bundle actual = kmeans_fit(X, n_clusters)
+    matrix actual_centroids = sort(vec(actual.centroids))
+    scalar actual_total_ssq = actual.total_ssq
+    scalar actual_within_variation_total = actual.within_variation_total
+    scalar actual_between_variation = actual.between_variation
+
+    # Then
+    assert_almost_equal_num(actual_total_ssq, expected_total_ssq, 1e-3)
+    assert_almost_equal_num(actual_within_variation_total, expected_within_variation_total, 1e-3)
+    assert_almost_equal_num(actual_between_variation, expected_between_variation, 1e-3)
+
+    loop i=1..rows(actual_centroids)
+        assert_almost_equal_num(actual_centroids[i], expected_centroids[i],\
+                                1e-5)
+    endloop
+end function
+test_kmeans_fit(n_clusters)
+
+
+
+
+
+
+
+
+
 
 print "Finished all tests succesfully."
 quit

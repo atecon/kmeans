@@ -1,11 +1,10 @@
 clear
 set verbose off
-set seed 1234
-
+set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 2
+EXAMPLE = 1
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -38,7 +37,7 @@ kmeans_summary(Model)  # Print summary of estimation
 series fc_cluster = kmeans_predict(x, Model)
 series cluster_id = Model.cluster_id  # must equal "fc_cluster"
 series distances = Model.distances
-print distances cluster_id fc_cluster -o
+print distances cluster_id fc_cluster -o --range=1:15
 
 # Plot distinct clusters for each variable combination in 2D
 kmeans_plot(x, Model)
@@ -54,8 +53,8 @@ kmeans_plot(x, Model)
 # Manhattan distance
 # ==================
 # Pass some user-defined parameter values, too
-bundle opt = _(max_iter = 100, n_draws = 20, distance_type = "manhattan")
-bundle Model = kmeans_fit(x, 4, opt)
+bundle opt = _(max_iter = 100, n_draws = 10, distance_type = "manhattan")
+bundle Model = kmeans_fit(x, 2, opt)
 
 # Plot distinct clusters
 kmeans_plot(x, Model)

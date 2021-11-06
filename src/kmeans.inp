@@ -80,14 +80,19 @@ function bundle kmeans_fit (const list xlist "Features",
     scalar self.n_clusters = n_clusters
     matrix features = {xlist}
 
-    self.distances_metric = $huge
+    self.within_variation_total = $huge
     scalar draw_id = 1
 
     loop self.n_draws  # evaluate several initial random draws of clusters
+
+        if self.verbose == 2
+            printf "\nInfo: Start the %d-th random draw.", draw_id
+        endif
+
         bundle Tmp = compute_kmeans(self, features)
 
-        if Tmp.distances_metric < self.distances_metric # select minimizing draw
-            scalar self.distances_metric = Tmp.distances_metric
+        if Tmp.within_variation_total < self.within_variation_total # select minimizing draw
+            scalar self.within_variation_total = Tmp.within_variation_total
             matrix self.centroids = Tmp.centroids
             matrix cluster_id = Tmp.cluster_id
             matrix distances = Tmp.distances
@@ -99,16 +104,34 @@ function bundle kmeans_fit (const list xlist "Features",
     cnameset(self.centroids, varnames(xlist))
     series self.cluster_id = cluster_id
     series self.distances = distances
+    add_variations(features, &self)
 
     return self
+end function
+
+
+function void add_variations (const matrix features, bundle *self)
+    /* Add various variation statistics.
+    return: void */
+
+    self.total_ssq = sumc(distance(features,\
+                                              self.distance_type,\
+                                              meanc(features))\
+                                    .^2)
+
+    bundle B = within_cluster_variation({self.distances}, {self.cluster_id})
+    scalar self.within_variation_avg = B["sum_of_avg_variation"]
+    scalar self.within_variation_total = B["sum_of_total_variation"]
+    scalar self.between_variation = self.total_ssq - self.within_variation_total
+    scalar self.between_to_total_variation = self.between_variation / self.total_ssq
 end function
 
 
 function void kmeans_summary (const bundle self)
     /* Print summary after fitting. */
 
-    print "***************************************"
-    print "*** K-means unsupervised clustering ***"
+    print "************************************************"
+    print "*** K-means unsupervised learning clustering ***"
 
     printf "\nParameters\n"
     printf "  No. of clusters: %d\n", self.n_clusters
@@ -117,10 +140,15 @@ function void kmeans_summary (const bundle self)
     printf "  Max. iterations: %d\n", self.max_iter
     #printf "  Actual iterations: %d\n", self.actual_iter
     printf "  No. of random draws: %d\n", self.n_draws
+    printf "  Tolerance: %f\n", self.tolerance
 
     printf "\nEstimation results:\n"
-    printf "  Estimated distance: %.3f\n", self.distances_metric
-    printf "***************************************\n"
+    printf "  Total sum of squares: %.3f\n", self.total_ssq
+    printf "  Total within-cluster sum of squares: %.3f\n", self.within_variation_total
+    printf "  Weighted total within-cluster sum of squares: %.3f\n", self.within_variation_avg
+    printf "  Between cluster sum of squares: %.3f\n", self.between_variation
+    printf "  (Between / Total): %.3f pct.\n", (self.between_to_total_variation * 100)
+    print "************************************************"
 end function
 
 
@@ -136,6 +164,8 @@ function void kmeans_plot (const list xlist, bundle self[null])
     series factor = self.cluster_id
 
     PairPlot(xlist, factor, PlotOpts)
+
+    print "Info: Finished plotting."
 end function
 
 
@@ -148,6 +178,8 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     scalar n_clusters = rows(values(cluster_id))
     scalar iter = 1
     matrix distances = mshape($huge, rows(features), n_clusters)
+    scalar inertia = $huge
+    scalar inertia_new = inertia
 
     loop while iter <= self.max_iter
         matrix centroids = centroids(features, cluster_id)
@@ -157,19 +189,29 @@ function bundle compute_kmeans (const bundle self, const matrix features)
         if rows(values(cluster_id_new)) == n_clusters  # check + update
             matrix centroids = centroids(features, cluster_id_new)
             cluster_id = cluster_id_new
-            matrix distances = distances_new
+            matrix distances = minr(distances_new)  # select minimum from all
 
             iter++
         else
             Warn(sprintf("Some assumed cluster has no observations. Stop searching after %d iterations.", iter))
             break
         endif
+
+        inertia_new = within_cluster_variation(distances, cluster_id)["sum_of_total_variation"]
+        inertia_delta = inertia - inertia_new
+        inertia = inertia_new
+
+        if inertia_delta >= 0 && inertia_delta < self.tolerance
+            if self.verbose == 2
+                printf "\nInfo: Converged after %d out of %d iterations (within total variation = %.5f).\n", iter, self.max_iter, inertia
+                flush
+            endif
+            break
+        endif
     endloop
 
-    # Compute final distances TODO: (really needed?)
-    #matrix distances = distance(features, self.distance_type, centroids[,2:])
-    matrix Model.distances = minr(distances)   # select minimum from all clusters for each obs.
-    scalar Model.distances_metric = sum_avg_squared_distance(distances, cluster_id)
+    matrix Model.distances = distances
+    scalar Model.within_variation_total = inertia
     matrix Model.cluster_id = cluster_id
     matrix Model.centroids = centroids
 
@@ -177,21 +219,25 @@ function bundle compute_kmeans (const bundle self, const matrix features)
 end function
 
 
-function scalar sum_avg_squared_distance (const matrix distances,
+function bundle within_cluster_variation (const matrix distances,
                                           const matrix cluster_id)
-    /* Compute the sum of the average squared distances across all clusters. */
+    /* Compute the sum of the (average) squared distances across all clusters.
+
+    "distances" already refers to some computed distance from the centroid, for instance $(x_{ij} - xbar_{ij})^2$ in case of the Euclidean distance. But it could also be some other distance measure.
+    The following definition is equal to the within-cluster variation as defined in James et al. "An Introduction to Statistical Learning", p. 387. */
 
     scalar n_clusters = max(cluster_id)
-    scalar metric = 0
+    matrix d2 = distances.^2
+    bundle B = _(sum_of_avg_variation = 0,\
+                 sum_of_total_variation = sum(d2))
 
     loop i=1..n_clusters
         matrix mask = (cluster_id .= $i)
         scalar n = sum(mask)
-
-        metric += sum(selifr(distances, mask)) * (1 / n)
+        B.sum_of_avg_variation += sum(selifr(d2, mask).^2) * (1 / n)
     endloop
 
-    return metric
+    return B
 end function
 
 

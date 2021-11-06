@@ -3,7 +3,7 @@
 <gretl-function-package name="kmeans" minver="2021e">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.1</version>
-<date>2021-11-02</date>
+<date>2021-11-06</date>
 <description>K-means clustering algorithm</description>
 <tags>C13 C52</tags>
 <help>
@@ -41,7 +41,8 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                                metrics, see gretl's built-in function
                                distance().
                 verbose:     int, Print details (0: don't print anything,
-                             1: print details (default))
+                             1: print some details, 2: print more details
+                             (default: 0))
                 initializer: str, Method for initialization. Currently only
                              &quot;random&quot; is supported (choose n_clusters
                              observations (rows) at random from data for the
@@ -54,11 +55,22 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                              algorithm to run.
                 algorithm:   str, kmeans algorithm to use. Currently only
                              &quot;full&quot; is supported (classical EM-style algorithm).
+                tolerance:   scalar, Minimum improvement of the
+                             &quot;within_variation_total&quot; (Sum of the squared
+                             distances across all clusters) required before
+                             early stopping the algorithm (default: 1e-4)
 
 
 Return:
 Bundle holding various items:
-  distance_metric:            scalar, Estimated &quot;inertia&quot;.
+  total_ssq:                  scalar, Sum of the squared distances of the
+                              features from its mean values
+  within_variation_total:     scalar, Sum of the squared distances across all
+                              clusters
+  within_variation_avg:       scalar, Sum of the average squared distances
+                              across all clusters
+  between_variation:          scalar, Between cluster sum of squares:
+                              &quot;total_ssq&quot; - within_variation_total
   error:                      int, Error code (0: no error)
   cluster_id:                 series, Estimated cluster ID for each observation
                               for the best draw minimizing &quot;inertia&quot;.
@@ -156,12 +168,15 @@ self.initializer = tolower(self.initializer)
 self.algorithm = tolower(self.algorithm)
 scalar self.n_clusters = n_clusters
 matrix features = {xlist}
-self.distances_metric = $huge
+self.within_variation_total = $huge
 scalar draw_id = 1
 loop self.n_draws  # evaluate several initial random draws of clusters
+  if self.verbose == 2
+    printf &quot;\nInfo: Start the %d-th random draw.&quot;, draw_id
+  endif
   bundle Tmp = compute_kmeans(self, features)
-  if Tmp.distances_metric &lt; self.distances_metric # select minimizing draw
-    scalar self.distances_metric = Tmp.distances_metric
+  if Tmp.within_variation_total &lt; self.within_variation_total # select minimizing draw
+    scalar self.within_variation_total = Tmp.within_variation_total
     matrix self.centroids = Tmp.centroids
     matrix cluster_id = Tmp.cluster_id
     matrix distances = Tmp.distances
@@ -171,6 +186,7 @@ endloop
 cnameset(self.centroids, varnames(xlist))
 series self.cluster_id = cluster_id
 series self.distances = distances
+add_variations(features, &amp;self)
 return self
 </code>
 </gretl-function>
@@ -202,6 +218,7 @@ PlotOpts = PlotOpts + self          # override defaults
 string PlotOpts.filename = inbundle(PlotOpts, &quot;filename&quot;) ? PlotOpts.filename : &quot;display&quot;
 series factor = self.cluster_id
 PairPlot(xlist, factor, PlotOpts)
+print &quot;Info: Finished plotting.&quot;
 </code>
 </gretl-function>
 <gretl-function name="kmeans_summary" type="void">
@@ -209,8 +226,8 @@ PairPlot(xlist, factor, PlotOpts)
   <param name="self" type="bundle" const="true"/>
  </params>
 <code>/* Print summary after fitting. */
-print &quot;***************************************&quot;
-print &quot;*** K-means unsupervised clustering ***&quot;
+print &quot;************************************************&quot;
+print &quot;*** K-means unsupervised learning clustering ***&quot;
 printf &quot;\nParameters\n&quot;
 printf &quot;  No. of clusters: %d\n&quot;, self.n_clusters
 printf &quot;  Distance type: '%s'\n&quot;, self.distance_type
@@ -218,9 +235,14 @@ printf &quot;  Algorithm: '%s'\n&quot;, self.algorithm
 printf &quot;  Max. iterations: %d\n&quot;, self.max_iter
 #printf &quot;  Actual iterations: %d\n&quot;, self.actual_iter
 printf &quot;  No. of random draws: %d\n&quot;, self.n_draws
+printf &quot;  Tolerance: %f\n&quot;, self.tolerance
 printf &quot;\nEstimation results:\n&quot;
-printf &quot;  Estimated distance: %.3f\n&quot;, self.distances_metric
-printf &quot;***************************************\n&quot;
+printf &quot;  Total sum of squares: %.3f\n&quot;, self.total_ssq
+printf &quot;  Total within-cluster sum of squares: %.3f\n&quot;, self.within_variation_total
+printf &quot;  Weighted total within-cluster sum of squares: %.3f\n&quot;, self.within_variation_avg
+printf &quot;  Between cluster sum of squares: %.3f\n&quot;, self.between_variation
+printf &quot;  (Between / Total): %.3f pct.\n&quot;, (self.between_to_total_variation * 100)
+print &quot;************************************************&quot;
 </code>
 </gretl-function>
 <gretl-function name="set_bundle_and_get_defaults" type="bundle" private="1">
@@ -271,6 +293,21 @@ else
 endif
 </code>
 </gretl-function>
+<gretl-function name="add_variations" type="void" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="self" type="bundleref"/>
+ </params>
+<code>/* Add various variation statistics.
+return: void */
+self.total_ssq = sumc(distance(features, self.distance_type, meanc(features)) .^2)
+bundle B = within_cluster_variation({self.distances}, {self.cluster_id})
+scalar self.within_variation_avg = B[&quot;sum_of_avg_variation&quot;]
+scalar self.within_variation_total = B[&quot;sum_of_total_variation&quot;]
+scalar self.between_variation = self.total_ssq - self.within_variation_total
+scalar self.between_to_total_variation = self.between_variation / self.total_ssq
+</code>
+</gretl-function>
 <gretl-function name="compute_kmeans" type="bundle" private="1">
  <params count="2">
   <param name="self" type="bundle" const="true"/>
@@ -283,6 +320,8 @@ matrix cluster_id = initialize_clusters(self)
 scalar n_clusters = rows(values(cluster_id))
 scalar iter = 1
 matrix distances = mshape($huge, rows(features), n_clusters)
+scalar inertia = $huge
+scalar inertia_new = inertia
 loop while iter &lt;= self.max_iter
   matrix centroids = centroids(features, cluster_id)
   matrix distances_new = distance(features, self.distance_type, centroids)
@@ -290,36 +329,47 @@ loop while iter &lt;= self.max_iter
   if rows(values(cluster_id_new)) == n_clusters  # check + update
     matrix centroids = centroids(features, cluster_id_new)
     cluster_id = cluster_id_new
-    matrix distances = distances_new
+    matrix distances = minr(distances_new)  # select minimum from all
     iter++
   else
     Warn(sprintf(&quot;Some assumed cluster has no observations. Stop searching after %d iterations.&quot;, iter))
     break
   endif
+  inertia_new = within_cluster_variation(distances, cluster_id)[&quot;sum_of_total_variation&quot;]
+  inertia_delta = inertia - inertia_new
+  inertia = inertia_new
+  if inertia_delta &gt;= 0 &amp;&amp; inertia_delta &lt; self.tolerance
+    if self.verbose == 2
+      printf &quot;\nInfo: Converged after %d out of %d iterations (within total variation = %.5f).\n&quot;, iter, self.max_iter, inertia
+      flush
+    endif
+    break
+  endif
 endloop
-# Compute final distances TODO: (really needed?)
-#matrix distances = distance(features, self.distance_type, centroids[,2:])
-matrix Model.distances = minr(distances)   # select minimum from all clusters for each obs.
-scalar Model.distances_metric = sum_avg_squared_distance(distances, cluster_id)
+matrix Model.distances = distances
+scalar Model.within_variation_total = inertia
 matrix Model.cluster_id = cluster_id
 matrix Model.centroids = centroids
 return Model
 </code>
 </gretl-function>
-<gretl-function name="sum_avg_squared_distance" type="scalar" private="1">
+<gretl-function name="within_cluster_variation" type="bundle" private="1">
  <params count="2">
   <param name="distances" type="matrix" const="true"/>
   <param name="cluster_id" type="matrix" const="true"/>
  </params>
-<code>/* Compute the sum of the average squared distances across all clusters. */
+<code>/* Compute the sum of the (average) squared distances across all clusters.
+&quot;distances&quot; already refers to some computed distance from the centroid, for instance $(x_{ij} - xbar_{ij})^2$ in case of the Euclidean distance. But it could also be some other distance measure.
+The following definition is equal to the within-cluster variation as defined in James et al. &quot;An Introduction to Statistical Learning&quot;, p. 387. */
 scalar n_clusters = max(cluster_id)
-scalar metric = 0
+matrix d2 = distances.^2
+bundle B = _(sum_of_avg_variation = 0, sum_of_total_variation = sum(d2))
 loop i=1..n_clusters
   matrix mask = (cluster_id .= $i)
   scalar n = sum(mask)
-  metric += sum(selifr(distances, mask)) * (1 / n)
+  B.sum_of_avg_variation += sum(selifr(d2, mask).^2) * (1 / n)
 endloop
-return metric
+return B
 </code>
 </gretl-function>
 <gretl-function name="centroids" type="matrix" private="1">
@@ -344,12 +394,11 @@ return centroids
 <sample-script>
 clear
 set verbose off
-set seed 1234
-
+set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 2
+EXAMPLE = 1
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -382,7 +431,7 @@ kmeans_summary(Model)  # Print summary of estimation
 series fc_cluster = kmeans_predict(x, Model)
 series cluster_id = Model.cluster_id  # must equal &quot;fc_cluster&quot;
 series distances = Model.distances
-print distances cluster_id fc_cluster -o
+print distances cluster_id fc_cluster -o --range=1:15
 
 # Plot distinct clusters for each variable combination in 2D
 kmeans_plot(x, Model)
@@ -398,8 +447,8 @@ kmeans_plot(x, Model)
 # Manhattan distance
 # ==================
 # Pass some user-defined parameter values, too
-bundle opt = _(max_iter = 100, n_draws = 20, distance_type = &quot;manhattan&quot;)
-bundle Model = kmeans_fit(x, 4, opt)
+bundle opt = _(max_iter = 100, n_draws = 10, distance_type = &quot;manhattan&quot;)
+bundle Model = kmeans_fit(x, 2, opt)
 
 # Plot distinct clusters
 kmeans_plot(x, Model)

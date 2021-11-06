@@ -32,7 +32,8 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                                metrics, see gretl's built-in function
                                distance().
                 verbose:     int, Print details (0: don't print anything,
-                             1: print details (default))
+                             1: print some details, 2: print more details
+                             (default: 0))
                 initializer: str, Method for initialization. Currently only
                              "random" is supported (choose n_clusters
                              observations (rows) at random from data for the
@@ -45,11 +46,22 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                              algorithm to run.
                 algorithm:   str, kmeans algorithm to use. Currently only
                              "full" is supported (classical EM-style algorithm).
+                tolerance:   scalar, Minimum improvement of the
+                             "within_variation_total" (Sum of the squared
+                             distances across all clusters) required before
+                             early stopping the algorithm (default: 1e-4)
 
 
 Return:
 Bundle holding various items:
-  distance_metric:            scalar, Estimated "inertia".
+  total_ssq:                  scalar, Sum of the squared distances of the
+                              features from its mean values
+  within_variation_total:     scalar, Sum of the squared distances across all
+                              clusters
+  within_variation_avg:       scalar, Sum of the average squared distances
+                              across all clusters
+  between_variation:          scalar, Between cluster sum of squares:
+                              "total_ssq" - within_variation_total
   error:                      int, Error code (0: no error)
   cluster_id:                 series, Estimated cluster ID for each observation
                               for the best draw minimizing "inertia".
