@@ -1,0 +1,53 @@
+set verbose off
+include "/home/at/git/kmeans/misc/kmeans/kmeans_funcs.inp"
+include kmeans.gfn
+
+### example
+
+set seed 12345
+nulldata 256
+nc = 3  # number of clusters
+true = randgen(i, 1, nc)
+
+nvar = 2
+m = 2 * mnormal(nvar, nc)
+
+list X = null
+loop i = 1 .. nvar
+    x$i = normal() + replace(true, seq(1, nc), m[i,])
+    X += x$i
+endloop
+
+series e = kmeans(X, nc, "euclid")
+
+
+# kmeans.gfn
+bundle Model = kmeans_fit(X, nc)
+print Model
+eval Model.centroids
+kmeans_summary(Model)  # Print summary of estimation
+
+/*
+loop i = 2 .. nvar
+    gnuplot x$i x1 e --dummy --output=display
+endloop
+*/
+
+columns = sprintf("3:%d\n", nvar+2) 
+kstr = sprintf("%d", nc)
+foreign language=R --send-data
+	# install.packages("stats")
+	X = gretldata[,@columns];
+	moo <- kmeans(X, @kstr);
+	sort(moo$centers)
+	moo$totss
+	moo$withinss
+	moo$tot.withinss
+	moo$betweenss
+	summary(moo);
+	Rc <- moo$cluster;
+	write.csv(Rc, "/home/at/tmp/Rc.csv");
+end foreign
+append "/home/at/tmp/Rc.csv"
+
+xtab e x true

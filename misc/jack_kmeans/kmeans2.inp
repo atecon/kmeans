@@ -1,0 +1,51 @@
+set verbose off
+include kmeans_funcs.inp
+include kmeans.gfn
+
+### the immportal iris example
+
+open irisdata.gdt
+list X = 2..5
+n_clusters = 3
+
+if 1
+    Z = X - petallen
+    loop foreach i Z
+        gnuplot $i petallen species --dummy --output=display
+    endloop
+endif
+
+moo = kmeans(X, n_clusters)
+
+/*
+if 1
+    Z = X - petallen
+    loop foreach i Z
+        gnuplot $i petallen moo --dummy --output=display
+    endloop
+endif
+*/
+
+bundle Model = kmeans_fit(X, n_clusters)
+print Model -o --range=1:15
+eval Model.centroids
+
+kmeans_summary(Model)  # Print summary of estimation
+
+foreign language=R --send-data
+	X = gretldata[,2:5];
+	moo <- kmeans(X, 3);
+    print(moo)
+	moo$centers
+    moo$totss
+    moo$withinss
+    moo$tot.withinss
+    moo$betweenss
+	Rc <- moo$cluster;
+	write.csv(Rc, "/tmp/Rc.csv");
+end foreign
+
+append "/tmp/Rc.csv"
+
+xtab moo x species
+

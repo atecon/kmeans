@@ -1,0 +1,115 @@
+set verbose off
+
+function scalar chkconv(const matrices before, const matrices after)
+    ret = 1
+    loop i = 1 .. nelem(before)
+        cmp = (before[i] == after[i])
+        ret = ret && ok(cmp) && cmp
+        if !ret
+            break
+        endif
+    endloop
+    return ret
+end function
+
+function matrices make_centroids(const matrix X, const matrices cl, string type)
+    m = cols(X)
+    k = nelem(cl)
+    matrix ms = zeros(k, m)
+    matrix d = zeros(k, 1)
+    loop i = 1 .. k
+        c = cl[i]
+        Xi = X[c,]
+        if nelem(c) > 0
+            ms[i,] = meanc(Xi)
+        endif
+        d[i] = sum(distance(Xi, type, ms[i,]).^2)
+    endloop
+    return defarray(ms, d)
+end function
+
+function matrix unravel(matrices clusters)
+    matrix ret = {}
+    loop i = 1 .. nelem(clusters)
+        ret |= (i ~ clusters[i])
+    endloop
+    return msortby(ret, 2)
+end function
+
+function void print_iter(const matrices c, matrix d, scalar iter, bool print_cl[0])
+    printf "Iteration %d: (tot d = %f)\n", iter, sumc(d)
+    if print_cl
+        loop i = 1 .. nelem(c)
+            printf "\tcluster %3d: %d points, dist = %f\n", i, nelem(c[i]), d[i]
+        endloop
+        printf "\n"
+    endif
+end function
+
+function matrix ssqdecomp(const matrix X, const matrix d)
+    TOT = sumc(distance(X, "eu", meanc(X)).^2)
+    WIT = sumc(d)
+    BET = TOT - WIT
+    return { WIT, BET, TOT }
+end function
+
+function matrix init_centroids(const matrix X, scalar k)
+    # try to pick datapoints that are as far apart as possible
+    scalar n = rows(X)
+    matrix sel = 1 + seq(0,k-1) * floor((n-1)/(k-1))
+    matrix f = princomp(X, 1, 1) ~ seq(1,n)'
+    f = msortby(f, 1)
+    sel = f[sel,2]
+    return X[sel,]
+end function
+
+
+function series kmeans(list X, scalar k, string dtype[null])
+
+    string type = exists(dtype) ? dtype : "euclidean"
+
+    smpl X --no-missing
+    matrix mX = stdize({X}, -1)
+    n = rows(mX)
+    m = cols(mX)
+    ndx = seq(1, n)'
+
+    centroids = init_centroids(mX, k)
+    matrix D = distance(mX, type, centroids)
+    matrices cl0 = array(k)
+
+    conv = 0
+    iter = 0
+    maxiter = 1024
+
+    loop while !conv && (iter < maxiter)
+        matrix D = distance(mX, type, centroids)
+        sel = iminr(D)
+        matrices clusters = msplitby(ndx, sel)
+        conv = chkconv(cl0, clusters)z
+        if !conv
+            tmp = make_centroids(mX, clusters, type)
+            centroids = tmp[1]
+            d = tmp[2]
+            cl0 = clusters
+        endif
+        iter++
+        print_iter(clusters, d, iter)
+    endloop
+
+    if conv
+        printf "converged\n"
+        dec = ssqdecomp(mX, d)
+        printf "Within = %g, Between = %g (Between/Total = %g%%)\n",
+          dec[1], dec[2], 100 * dec[2]/dec[3]
+    else
+        printf "not converged (max iter reached)\n"
+    endif
+
+    aaa = unravel(clusters)
+
+    series ret = aaa[,1]
+
+    summary X --simple --by=ret
+    return ret
+end function
