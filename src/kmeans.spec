@@ -1,10 +1,10 @@
 author = Artur Tarassow
 email = atecon@posteo.de
 version = 0.1
-date = 2021-11-06
+date = 2022-02-15
 description = K-means clustering algorithm
 tags = C13 C52
-min-version = 2021e
+min-version = 2022a
 public = kmeans_fit kmeans_predict kmeans_plot kmeans_summary
 help = kmeans_help.txt
 sample-script = kmeans_sample.inp
