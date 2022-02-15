@@ -56,7 +56,7 @@ kmeans_plot(x, Model)
 # Pass some user-defined parameter values, too
 bundle opt = _(max_iter = 100, n_draws = 10, distance_type = "manhattan")
 bundle Model = kmeans_fit(x, 2, opt)
+print Model
 
 # Plot distinct clusters
 kmeans_plot(x, Model)
-

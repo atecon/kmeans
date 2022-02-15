@@ -45,7 +45,9 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                              (default: 0))
                 initializer: str, Method for initialization.
                              &quot;random&quot;: Choose n_clusters observations (rows) at
-                             random from data for the initial centroids
+                                       random from data for the initial centroids.
+                             &quot;pca&quot;:    Try to pick data points that are as far apart as possible by
+                                       means of PCA.
                 n_draws:     int, Number of time the kmeans algorithm will be
                              run with different centroid seeds. The final
                              results will be the best output of n_draws
@@ -171,7 +173,8 @@ self.within_variation_total = $huge
 scalar draw_id = 1
 loop self.n_draws  # evaluate several initial random draws of clusters
   if self.verbose == 2
-    printf &quot;\nInfo: Start the %d-th random draw.&quot;, draw_id
+    Info(sprintf(&quot;\nStart the %d-th random draw.&quot;, draw_id))
+    flush
   endif
   bundle Tmp = compute_kmeans(self, features)
   if Tmp.within_variation_total &lt; self.within_variation_total # select minimizing draw
@@ -194,12 +197,12 @@ return self
   <param name="xlist" type="list" const="true">
 <description>Features</description>
   </param>
-  <param name="Model" type="bundle" const="true"/>
+  <param name="self" type="bundle" const="true"/>
  </params>
 <code>/* Predict cluster belonging for a given model.
 return: Series with predicted cluster belongings. */
 errorif(sum(missing(xlist)), &quot;Some features have missing values. Please drop these first.&quot;)
-matrix distances = distance({xlist}, Model.distance_type, Model.centroids)
+matrix distances = distance({xlist}, self.distance_type, self.centroids)
 series cluster_id = iminr(distances)
 return cluster_id
 </code>
@@ -217,7 +220,7 @@ PlotOpts = PlotOpts + self          # override defaults
 string PlotOpts.filename = inbundle(PlotOpts, &quot;filename&quot;) ? PlotOpts.filename : &quot;display&quot;
 series factor = self.cluster_id
 PairPlot(xlist, factor, PlotOpts)
-print &quot;Info: Finished plotting.&quot;
+Info(&quot;Finished plotting.&quot;)
 </code>
 </gretl-function>
 <gretl-function name="kmeans_summary" type="void">
@@ -288,19 +291,24 @@ return self
 return: series, Randomly assign 1 to n_cluster ID for each observation. */
 if self.initializer == &quot;random&quot;
   return mrandgen(i, 1, self.n_clusters, $nobs, 1)
-  #elif tolower(self.initializer) == &quot;pca&quot;
-  #return init_pca(features, self.n_clusters)
+elif tolower(self.initializer) == &quot;pca&quot;
+  bundle B = self
+  matrix B.centroids = init_centroids_by_pca(features, B.n_clusters)
+  list xlist = mat2list(features)
+  matrix cluster_id = kmeans_predict(xlist, B)
+  return cluster_id
 else
   funcerr &quot;Initializer is not supported.&quot;
 endif
 </code>
 </gretl-function>
-<gretl-function name="init_pca" type="matrix" private="1">
+<gretl-function name="init_centroids_by_pca" type="matrix" private="1">
  <params count="2">
   <param name="features" type="matrix" const="true"/>
   <param name="n_clusters" type="scalar"/>
  </params>
-<code>/* Try to pick data points that are as far apart as possible by means of PCA. Idea borrowed from Jack Lucchetti.
+<code>/* Try to pick data points that are as far apart as possible by means of PCA.
+Idea borrowed from Jack Lucchetti.
 return: Matrix of centroids for each cluster (rows) and each feature (columns). */
 scalar n = rows(features)
 matrix mask = 1 + seq(0, (n_clusters - 1)) * floor((n - 1) / (n_clusters - 1))
@@ -357,7 +365,7 @@ loop while iter &lt;= self.max_iter
   inertia = inertia_new
   if inertia_delta &gt;= 0 &amp;&amp; inertia_delta &lt; self.tolerance
     if self.verbose == 2
-      printf &quot;\nInfo: Converged after %d out of %d iterations (within total variation = %.5f).\n&quot;, iter, self.max_iter, inertia
+      Info(sprintf(&quot;Converged after %d out of %d iterations (within total variation = %.5f).&quot;, iter, self.max_iter, inertia))
       flush
     endif
     break
@@ -467,6 +475,7 @@ kmeans_plot(x, Model)
 # Pass some user-defined parameter values, too
 bundle opt = _(max_iter = 100, n_draws = 10, distance_type = &quot;manhattan&quot;)
 bundle Model = kmeans_fit(x, 2, opt)
+print Model
 
 # Plot distinct clusters
 kmeans_plot(x, Model)

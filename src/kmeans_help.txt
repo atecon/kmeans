@@ -36,7 +36,9 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                              (default: 0))
                 initializer: str, Method for initialization.
                              "random": Choose n_clusters observations (rows) at
-                             random from data for the initial centroids
+                                       random from data for the initial centroids.
+                             "pca":    Try to pick data points that are as far apart as possible by
+                                       means of PCA.
                 n_draws:     int, Number of time the kmeans algorithm will be
                              run with different centroid seeds. The final
                              results will be the best output of n_draws
