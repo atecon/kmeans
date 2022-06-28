@@ -4,7 +4,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 3
+EXAMPLE = 4
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -22,6 +22,11 @@ elif EXAMPLE == 3
     open iris.gdt --frompkg=PairPlot --quiet
     list x = 1..4
     scalar n_clusters = 3
+elif EXAMPLE == 4
+    open denmark --quiet
+    list x = LRM LRY
+    x = diff(x)
+    n_clusters = 2
 endif
 
 smpl x --no-missing

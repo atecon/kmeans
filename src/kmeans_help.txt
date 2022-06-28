@@ -132,5 +132,7 @@ Nothing.
 
 
 Changelog:
+- v0.2, June 2022
+    + Fix bug with time-series dataset
 - v0.1, February 2022
     + initial release

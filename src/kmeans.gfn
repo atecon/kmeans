@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="kmeans" minver="2022a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
-<version>0.1</version>
-<date>2022-02-15</date>
+<version>0.2</version>
+<date>2022-06-28</date>
 <description>K-means clustering algorithm</description>
 <tags>C13 C52</tags>
 <help>
@@ -141,6 +141,8 @@ Nothing.
 
 
 Changelog:
+- v0.2, June 2022
+    + Fix bug with time-series dataset
 - v0.1, February 2022
     + initial release
 </help>
@@ -186,8 +188,13 @@ loop self.n_draws  # evaluate several initial random draws of clusters
   draw_id++
 endloop
 cnameset(self.centroids, varnames(xlist))
-series self.cluster_id = cluster_id
-series self.distances = distances
+series self.cluster_id = NA
+series self.distances = NA
+# This trick is somehow needed for time-series
+series stmp = cluster_id
+series self.cluster_id = stmp
+series stmp = distances
+series self.distances = stmp
 add_variations(features, &amp;self)
 return self
 </code>
@@ -423,7 +430,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 3
+EXAMPLE = 4
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
@@ -441,6 +448,11 @@ elif EXAMPLE == 3
     open iris.gdt --frompkg=PairPlot --quiet
     list x = 1..4
     scalar n_clusters = 3
+elif EXAMPLE == 4
+    open denmark --quiet
+    list x = LRM LRY
+    x = diff(x)
+    n_clusters = 2
 endif
 
 smpl x --no-missing

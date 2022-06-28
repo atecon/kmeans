@@ -125,8 +125,16 @@ function bundle kmeans_fit (const list xlist "Features",
     endloop
 
     cnameset(self.centroids, varnames(xlist))
-    series self.cluster_id = cluster_id
-    series self.distances = distances
+
+    series self.cluster_id = NA
+    series self.distances = NA
+
+    # This trick is somehow needed for time-series
+    series stmp = cluster_id
+    series self.cluster_id = stmp
+
+    series stmp = distances
+    series self.distances = stmp
     add_variations(features, &self)
 
     return self
