@@ -92,7 +92,11 @@ function bundle kmeans_fit (const list xlist "Features",
         bundle opts = null
     endif
 
-    errorif(sum(missing(xlist)), "Some features have missing values. Please drop these first.")
+    if sum(missing(xlist))
+        smpl xlist --no-missing
+        printf "WARNING: Removed all rows with missing values for at least one variable."
+        flush
+    endif
 
     bundle self = set_bundle_and_get_defaults(xlist, opts)
     self.distance_type = tolower(self.distance_type)
