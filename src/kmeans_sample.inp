@@ -4,11 +4,12 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 4
+EXAMPLE = 1
 
 if EXAMPLE == 1
     open mccullagh.gdt --quiet
 
+    Type[1] = NA  # add missing value entry just for testing purpose
     list x = Months Acc Type
     n_clusters = 2
 
@@ -35,10 +36,19 @@ smpl x --no-missing
 # ============================
 bundle Model = kmeans_fit(x, n_clusters)
 print Model
-eval Model.centroids   # print matrix of centroids
-
 kmeans_summary(Model)  # Print summary of estimation
 
+print Model.centroids                   # print centroids
+# Retrieve cluster_id for valid observations
+series cluster_id = Model.cluster_id
+# Look for eventual gaps for observations for which some of the input variables
+# are missing
+smpl full
+print cluster_id -o
+
+
+# Predict
+smpl x --no-missing
 series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
 series cluster_id = Model.cluster_id          # must equal "fc_cluster"
 series distances = Model.distances

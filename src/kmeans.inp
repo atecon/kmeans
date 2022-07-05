@@ -26,6 +26,7 @@ function bundle default_values (const list xlist)
     scalar self.tolerance = 1e-4
     string self.algorithm = "full"
     string self.distance_type = "euclidean"
+    scalar self.nobs = $nobs
 
     # For kmeans_plot()
     scalar self.use_circles = FALSE
@@ -92,25 +93,21 @@ function bundle kmeans_fit (const list xlist "Features",
         bundle opts = null
     endif
 
-    if sum(missing(xlist))
-        smpl xlist --no-missing
-        printf "WARNING: Removed all rows with missing values for at least one variable."
-        flush
-    endif
+    errorif(sum(missing(xlist)),\
+            "Some features have missing values. Please drop these first.")
 
     bundle self = set_bundle_and_get_defaults(xlist, opts)
     self.distance_type = tolower(self.distance_type)
     self.initializer = tolower(self.initializer)
     self.algorithm = tolower(self.algorithm)
-
     scalar self.n_clusters = n_clusters
     matrix features = {xlist}
-
-    self.within_variation_total = $huge
+    scalar self.within_variation_total = $huge
     scalar draw_id = 1
+    matrix self.cluster_id = mshape(NA, $nobs, 1)
+    matrix  self.distances = mshape(NA, $nobs, 1)
 
     loop self.n_draws  # evaluate several initial random draws of clusters
-
         if self.verbose == 2
             Info(sprintf("\nStart the %d-th random draw.", draw_id))
             flush
@@ -130,15 +127,8 @@ function bundle kmeans_fit (const list xlist "Features",
 
     cnameset(self.centroids, varnames(xlist))
 
-    series self.cluster_id = NA
-    series self.distances = NA
-
-    # This trick is somehow needed for time-series
-    series stmp = cluster_id
-    series self.cluster_id = stmp
-
-    series stmp = distances
-    series self.distances = stmp
+    matrix self.cluster_id = cluster_id
+    matrix self.distances = distances
     add_variations(features, &self)
 
     return self
@@ -154,7 +144,7 @@ function void add_variations (const matrix features, bundle *self)
                                               meanc(features))\
                                     .^2)
 
-    bundle B = within_cluster_variation({self.distances}, {self.cluster_id})
+    bundle B = within_cluster_variation(self.distances, self.cluster_id)
     scalar self.within_variation_avg = B["sum_of_avg_variation"]
     scalar self.within_variation_total = B["sum_of_total_variation"]
     scalar self.between_variation = self.total_ssq - self.within_variation_total

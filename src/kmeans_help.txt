@@ -55,26 +55,28 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
 
 Return:
 Bundle holding various items:
+  between_variation:          scalar, Between cluster sum of squares:
+                              "total_ssq" - within_variation_total
+  centroids:                  matrix, Estimated mean values (centroids) for
+                              each feature (columns) and for each clusters
+                              (rows).
+  cluster_id:                 matrix, Estimated cluster ID for each observation
+                              for the best draw minimizing "inertia".
+  distances:                  matrix, Estimated distance for the best draw
+                              minimizing "inertia".
+  error:                      int, Error code (0: no error)
+  nobs:                       int, Number of non-missing observations used for training
+  pointsize:                  scalar, Size of points being plotted when calling
+                              the kmeans_plot() function.
   total_ssq:                  scalar, Sum of the squared distances of the
                               features from its mean values
+  use_circles:                bool, Plot circles instead of point when calling
+                              the kmeans_plot() function.
   within_variation_total:     scalar, Sum of the squared distances across all
                               clusters
   within_variation_avg:       scalar, Sum of the average squared distances
                               across all clusters
-  between_variation:          scalar, Between cluster sum of squares:
-                              "total_ssq" - within_variation_total
-  error:                      int, Error code (0: no error)
-  cluster_id:                 series, Estimated cluster ID for each observation
-                              for the best draw minimizing "inertia".
-  distances:                  series, Estimated distance for the best draw
-                              minimizing "inertia".
-  centroids:                  matrix, Estimated mean values (centroids) for
-                              each feature (columns) and for each clusters
-                              (rows).
-  use_circles:                bool, Plot circles instead of point when calling
-                              the kmeans_plot() function.
-  pointsize:                  scalar, Size of points being plotted when calling
-                              the kmeans_plot() function.
+
 -----------------------------------------------------------------------
 
 
@@ -133,6 +135,10 @@ Nothing.
 
 Changelog:
 - v0.2, June 2022
-    + Fix bug with time-series dataset
+    + Fix bug with if the sample range is not full and you're trying to coerce a
+      column vector that's not the full length of the dataset into a series on
+      adding it to a bundle
+    + Returned objects "cluster_id" and "distances" when calling the kmeans_fit()
+      function are of type matrix instead of series, now.
 - v0.1, February 2022
     + initial release
