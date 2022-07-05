@@ -65,7 +65,8 @@ Bundle holding various items:
   distances:                  matrix, Estimated distance for the best draw
                               minimizing "inertia".
   error:                      int, Error code (0: no error)
-  nobs:                       int, Number of non-missing observations used for training
+  nobs:                       int, Number of non-missing observations used for
+                              training
   pointsize:                  scalar, Size of points being plotted when calling
                               the kmeans_plot() function.
   total_ssq:                  scalar, Sum of the squared distances of the
@@ -86,9 +87,9 @@ Function:       kmeans_predict (const list xlist, const bundle Model)
 Description:    Predict cluster belonging based on the estimated model.
 
 Arguments:
-xlist:          list, Features (regressors) used for predicting cluster
+    xlist:      list, Features (regressors) used for predicting cluster
                 belonging.
-Model:          bundle, Bundle returned by the kmeans_fit() function.
+    Model:      bundle, Bundle returned by the kmeans_fit() function.
 
 Return:
 Series holding the predicted cluster ID for each observation.
@@ -102,7 +103,7 @@ Description:    Print summarizing information on estimation step after having
                 applied the kmeans_fit() function.
 
 Arguments:
-Model:          bundle, Bundle returned by the kmeans_fit() function.
+    Model:      bundle, Bundle returned by the kmeans_fit() function.
 
 Return:
 Nothing.
@@ -117,8 +118,8 @@ Description:    Factorized scatter plot estimated clusters for each
                 user-defined package "PairPlot" which must be installed.
 
 Arguments:
-xlist:          list, Features (regressors) used for plotting.
-self:           bundle, Bundle for manipulating the plot. Currently you can
+    xlist:      list, Features (regressors) used for plotting.
+    self:       bundle, Bundle for manipulating the plot. Currently you can
                 pass.
                 filename:     str, Full path + filename for storing the plot
                               (default: "display" shows the plot immediately
