@@ -3,7 +3,7 @@
 <gretl-function-package name="kmeans" minver="2022a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.2</version>
-<date>2022-07-05</date>
+<date>2022-07-19</date>
 <description>K-means clustering algorithm</description>
 <tags>C13 C52</tags>
 <help>
@@ -45,9 +45,10 @@ opts:           bundle, Optional parameters affecting the kmeans algorithm. You
                              (default: 0))
                 initializer: str, Method for initialization.
                              &quot;random&quot;: Choose n_clusters observations (rows) at
-                                       random from data for the initial centroids.
-                             &quot;pca&quot;:    Try to pick data points that are as far apart as possible by
-                                       means of PCA.
+                                       random from data for the initial
+                                       centroids.
+                             &quot;pca&quot;:    Try to pick data points that are as far
+                                       apart as possible by means of PCA.
                 n_draws:     int, Number of time the kmeans algorithm will be
                              run with different centroid seeds. The final
                              results will be the best output of n_draws
@@ -144,12 +145,12 @@ Nothing.
 
 
 Changelog:
-- v0.2, June 2022
+- v0.2, July 2022
     + Fix bug with if the sample range is not full and you're trying to coerce a
       column vector that's not the full length of the dataset into a series on
-      adding it to a bundle
-    + Returned objects &quot;cluster_id&quot; and &quot;distances&quot; when calling the kmeans_fit()
-      function are of type matrix instead of series, now.
+      adding it to a bundle.
+    + Returned objects &quot;cluster_id&quot; and &quot;distances&quot; when calling the
+      kmeans_fit() function are of type matrix instead of series, now.
 - v0.1, February 2022
     + initial release
 </help>
@@ -168,6 +169,7 @@ logging PairPlot </depends>
   </param>
  </params>
 <code>/* Estimate clusters. */
+check_required_pkg_version()
 if !exists(opts)
   bundle opts = null
 endif
@@ -328,6 +330,12 @@ matrix f = princomp(features, 1, 1) ~ seq(1, n)'
 f = msortby(f, 1)
 mask = f[mask, 2]
 return features[mask,]
+</code>
+</gretl-function>
+<gretl-function name="check_required_pkg_version" type="void" private="1">
+<code>/* Check if installed dependencies fulfill version requirements. */
+pkg query PairPlot --quiet
+errorif($result.version &lt; 0.8, sprintf(&quot;Please update the 'PairPlot' package to at least version 0.8.\n\ The hansl command is 'pkg install PairPlot'&quot;) )
 </code>
 </gretl-function>
 <gretl-function name="add_variations" type="void" private="1">
