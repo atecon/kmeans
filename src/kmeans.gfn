@@ -252,10 +252,10 @@ printf &quot;  Max. iterations: %d\n&quot;, self.max_iter
 printf &quot;  No. of random draws: %d\n&quot;, self.n_draws
 printf &quot;  Tolerance: %f\n&quot;, self.tolerance
 printf &quot;\nEstimation results:\n&quot;
-printf &quot;  Total sum of squares: %.3f\n&quot;, self.total_ssq
-printf &quot;  Total within-cluster sum of squares: %.3f\n&quot;, self.within_variation_total
-printf &quot;  Weighted total within-cluster sum of squares: %.3f\n&quot;, self.within_variation_avg
-printf &quot;  Between cluster sum of squares: %.3f\n&quot;, self.between_variation
+printf &quot;  Total sum of squares: %e\n&quot;, self.total_ssq
+printf &quot;  Total within-cluster sum of squares: %e\n&quot;, self.within_variation_total
+printf &quot;  Weighted total within-cluster sum of squares: %e\n&quot;, self.within_variation_avg
+printf &quot;  Between cluster sum of squares: %e\n&quot;, self.between_variation
 printf &quot;  (Between / Total): %.3f pct.\n&quot;, (self.between_to_total_variation * 100)
 print &quot;************************************************&quot;
 </code>

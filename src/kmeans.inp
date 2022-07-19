@@ -180,10 +180,10 @@ function void kmeans_summary (const bundle self)
     printf "  Tolerance: %f\n", self.tolerance
 
     printf "\nEstimation results:\n"
-    printf "  Total sum of squares: %.3f\n", self.total_ssq
-    printf "  Total within-cluster sum of squares: %.3f\n", self.within_variation_total
-    printf "  Weighted total within-cluster sum of squares: %.3f\n", self.within_variation_avg
-    printf "  Between cluster sum of squares: %.3f\n", self.between_variation
+    printf "  Total sum of squares: %e\n", self.total_ssq
+    printf "  Total within-cluster sum of squares: %e\n", self.within_variation_total
+    printf "  Weighted total within-cluster sum of squares: %e\n", self.within_variation_avg
+    printf "  Between cluster sum of squares: %e\n", self.between_variation
     printf "  (Between / Total): %.3f pct.\n", (self.between_to_total_variation * 100)
     print "************************************************"
 end function
