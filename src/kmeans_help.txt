@@ -137,9 +137,9 @@ Nothing.
 
 Changelog:
 - v0.2, July 2022
-    + Fix bug with if the sample range is not full and you're trying to coerce a
-      column vector that's not the full length of the dataset into a series on
-      adding it to a bundle.
+    + Fix bug occurring in case the sample range is restricted and you're
+      trying to coerce a column vector that's not the full length of the
+      dataset into a series on adding it to a bundle.
     + Returned objects "cluster_id" and "distances" when calling the
       kmeans_fit() function are of type matrix instead of series, now.
 - v0.1, February 2022
