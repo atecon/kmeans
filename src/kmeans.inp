@@ -89,7 +89,7 @@ function void check_required_pkg_version (void)
 
     pkg query PairPlot --quiet
     errorif($result.version < 0.8,\
-            sprintf("Please update the 'PairPlot' package to at least version 0.8.\n\ The hansl command is 'pkg install PairPlot'")
+            sprintf("Please update the 'PairPlot' package to at least version 0.8.\n\ The hansl command is 'pkg install PairPlot'")\
             )
 end function
 
