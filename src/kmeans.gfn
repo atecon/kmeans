@@ -146,7 +146,7 @@ Nothing.
 
 Changelog:
 - v0.2, July 2022
-    + Fix bug occurring in case the sample range is restricted and you're
+    + Fix bug that arises if the sample range is restricted and you're
       trying to coerce a column vector that's not the full length of the
       dataset into a series on adding it to a bundle.
     + Returned objects &quot;cluster_id&quot; and &quot;distances&quot; when calling the
