@@ -3,7 +3,7 @@
 <gretl-function-package name="kmeans" minver="2022a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.2</version>
-<date>2022-07-19</date>
+<date>2022-07-20</date>
 <description>K-means clustering algorithm</description>
 <tags>C13 C52</tags>
 <help>
