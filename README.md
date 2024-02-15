@@ -13,6 +13,12 @@ https://scikit-learn.org/stable/modules/clustering.html#kmeans
 Please ask questions and report bugs on the Gretl mailing list if possible. Alternatively, create an issue ticket on the github repo (see below).
 Source code and test script(s) can be found here: https://github.com/atecon/kmeans
 
+
+## GUI access
+
+The dialog box can be opened via `View -> k-Means`.
+
+
 # Public Functions
 
 ## kmeans_fit
@@ -103,6 +109,7 @@ Factorized scatter plot estimated clusters for each 2-dimensional combination of
 # Changelog
 
 * **v0.3 (February 2024)**
+    * Add GUI dialog
     * Move to markdown-based help file
     * Internal improvements
 
