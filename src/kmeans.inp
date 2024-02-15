@@ -293,3 +293,19 @@ function matrix centroids (const matrix features,
 
     return centroids
 end function
+
+
+function bundle kmeansGUI (const list X "Input",
+                           const int n_clusters[2::2] "No. of clusters",
+                           const int distance[1:6:1] {"euclidean", "manhattan", "hamming", "chebyshev", "cosine", "mahalanobis"})
+    /* Function for creating GUI dialog box. */
+
+
+    bundle Model = kmeans_fit(X, n_clusters)
+    kmeans_summary(Model)
+    print Model.centroids
+    kmeans_plot(X, Model)
+
+    return Model
+end function
+
