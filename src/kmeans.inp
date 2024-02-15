@@ -189,18 +189,14 @@ function void kmeans_summary (const bundle self)
 end function
 
 
-function void kmeans_plot (const list xlist, bundle self[null])
+function void kmeans_plot (const list xlist, bundle self)
     /* Plot clusters in 2-dimensions. */
 
-    if !exists(PlotOpts)
-        bundle PlotOpts = null
-    endif
-
-    PlotOpts = PlotOpts + self          # override defaults
-    string PlotOpts.filename = inbundle(PlotOpts, "filename") ? PlotOpts.filename : "display"
+    string self.filename = inbundle(self, "filename") ? \
+                                    self.filename : "display"
     series factor = self.cluster_id
 
-    PairPlot(xlist, factor, PlotOpts)
+    PairPlot(xlist, factor, self)
 
     Info("Finished plotting.")
 end function
