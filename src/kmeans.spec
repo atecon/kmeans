@@ -10,6 +10,6 @@ help = kmeans_help.md
 sample-script = kmeans_sample.inp
 depends = logging PairPlot
 gui-main = kmeansGUI
+menu-only = kmeansGUI
 label = k-Means
 menu-attachment = MAINWIN/View
-no-print = kmeansGUI
