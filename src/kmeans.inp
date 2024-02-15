@@ -298,7 +298,7 @@ end function
 function bundle kmeansGUI (const list X "Input",
                            const int n_clusters[2::2] "No. of clusters",
                            const int distance[1:6:1] {"euclidean", "manhattan", "hamming", "chebyshev", "cosine", "mahalanobis"},
-                           const int showPlot[0:1:0] "Show plot" {"No plot", "Show plot"})
+                           const int showPlot[0:1:0] "Show plot" {"No", "Yes"})
     /* Function for creating GUI dialog box. */
 
     bundle Model = kmeans_fit(X, n_clusters)
