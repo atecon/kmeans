@@ -94,6 +94,16 @@ function void check_required_pkg_version (void)
 end function
 
 
+function void check_for_missings (const series validobs)
+    /* Inform about eventual missing values.*/
+
+    scalar n_missings = sum(validobs == 0)
+    if n_missings
+        Warn(sprintf("%d missing observations are removed.", n_missings))
+    endif
+end function
+
+
 function bundle kmeans_fit (const list xlist "Features",
                             const int n_clusters[2::2] "No. of clusters",
                             bundle opts[null] "Parameter bundle")
