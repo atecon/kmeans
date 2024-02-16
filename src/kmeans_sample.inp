@@ -30,17 +30,18 @@ elif EXAMPLE == 4
     n_clusters = 2
 endif
 
-smpl x --no-missing
-
-# Euclidean distance (default)
+print "Euclidean distance (default)"
 # ============================
 bundle Model = kmeans_fit(x, n_clusters)
 print Model
 kmeans_summary(Model)  # Print summary of estimation
+print Model.centroids  # print centroids
 
-print Model.centroids                   # print centroids
 # Retrieve cluster_id for valid observations
 series cluster_id = Model.cluster_id
+print x cluster_id -o
+stop
+
 # Look for eventual gaps for observations for which some of the input variables
 # are missing
 smpl full
@@ -48,7 +49,6 @@ print cluster_id -o
 
 
 # Predict
-smpl x --no-missing
 series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
 series cluster_id = Model.cluster_id          # must equal "fc_cluster"
 series distances = Model.distances
@@ -58,12 +58,13 @@ print distances cluster_id fc_cluster -o --range=1:15
 kmeans_plot(x, Model)
 
 
-/* You can also manipulate the plot if wanted:
+#/* You can also manipulate the plot if wanted:
 Model.use_circles = TRUE
 Model.pointsize = 0.25
 Model.filename = "foo2.png"     # pass filename for storing plot
+
 kmeans_plot(x, Model)
-*/
+#*/
 
 
 # Manhattan distance

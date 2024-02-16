@@ -27,7 +27,7 @@ The dialog box can be opened via `View -> k-Means`.
 kmeans_fit (const list xlist, const int n_clusters[2::2], bundle opts[null])
 ```
 
-Execute the kmeans algorithm and estimate the clusters.
+Execute the kmeans algorithm and estimate the clusters. Missing values will be automatically removed.
 
 **Arguments:**
 

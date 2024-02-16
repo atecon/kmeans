@@ -115,8 +115,9 @@ function bundle kmeans_fit (const list xlist "Features",
         bundle opts = null
     endif
 
-    errorif(sum(missing(xlist)),\
-            "Some features have missing values. Please drop these first.")
+    series valid = ok(xlist)
+    check_for_missings(valid)
+    smpl valid --dummy  # restrict to valid observations
 
     bundle self = set_bundle_and_get_defaults(xlist, opts)
     self.distance_type = tolower(self.distance_type)
@@ -148,8 +149,7 @@ function bundle kmeans_fit (const list xlist "Features",
     endloop
 
     cnameset(self.centroids, varnames(xlist))
-
-    matrix self.cluster_id = cluster_id
+    series self.cluster_id = cluster_id
     matrix self.distances = distances
     add_variations(features, &self)
 
@@ -158,15 +158,13 @@ end function
 
 
 function void add_variations (const matrix features, bundle *self)
-    /* Add various variation statistics.
-    return: void */
+    /* Add various variation statistics. */
 
-    self.total_ssq = sumc(distance(features,\
-                                              self.distance_type,\
-                                              meanc(features))\
-                                    .^2)
+    self.total_ssq = sumc(distance(features,
+                                   self.distance_type,
+                                   meanc(features)).^2)
 
-    bundle B = within_cluster_variation(self.distances, self.cluster_id)
+    bundle B = within_cluster_variation(self.distances, {self.cluster_id})
     scalar self.within_variation_avg = B["sum_of_avg_variation"]
     scalar self.within_variation_total = B["sum_of_total_variation"]
     scalar self.between_variation = self.total_ssq - self.within_variation_total
