@@ -94,16 +94,6 @@ function void check_required_pkg_version (void)
 end function
 
 
-function void check_for_missings (const series validobs)
-    /* Inform about eventual missing values.*/
-
-    scalar n_missings = sum(validobs == 0)
-    if n_missings
-        Warn(sprintf("%d missing observations are removed.", n_missings))
-    endif
-end function
-
-
 function bundle kmeans_fit (const list xlist "Features",
                             const int n_clusters[2::2] "No. of clusters",
                             bundle opts[null] "Parameter bundle")
@@ -115,9 +105,8 @@ function bundle kmeans_fit (const list xlist "Features",
         bundle opts = null
     endif
 
-    series valid = ok(xlist)
-    check_for_missings(valid)
-    smpl valid --dummy  # restrict to valid observations
+    errorif(sum(missing(xlist)),\
+            "Some features have missing values. Please drop these first.")
 
     bundle self = set_bundle_and_get_defaults(xlist, opts)
     self.distance_type = tolower(self.distance_type)
@@ -149,7 +138,8 @@ function bundle kmeans_fit (const list xlist "Features",
     endloop
 
     cnameset(self.centroids, varnames(xlist))
-    series self.cluster_id = cluster_id
+
+    matrix self.cluster_id = cluster_id
     matrix self.distances = distances
     add_variations(features, &self)
 
@@ -158,13 +148,15 @@ end function
 
 
 function void add_variations (const matrix features, bundle *self)
-    /* Add various variation statistics. */
+    /* Add various variation statistics.
+    return: void */
 
-    self.total_ssq = sumc(distance(features,
-                                   self.distance_type,
-                                   meanc(features)).^2)
+    self.total_ssq = sumc(distance(features,\
+                                              self.distance_type,\
+                                              meanc(features))\
+                                    .^2)
 
-    bundle B = within_cluster_variation(self.distances, {self.cluster_id})
+    bundle B = within_cluster_variation(self.distances, self.cluster_id)
     scalar self.within_variation_avg = B["sum_of_avg_variation"]
     scalar self.within_variation_total = B["sum_of_total_variation"]
     scalar self.between_variation = self.total_ssq - self.within_variation_total
