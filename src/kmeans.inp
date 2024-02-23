@@ -4,7 +4,7 @@ function bundle set_bundle_and_get_defaults (const list xlist,
     from 'opts' bundle. */
 
     if !exists(opts)
-        bundle opts = null
+        bundle opts = defbundle()
     endif
 
     bundle self = default_values(xlist)
@@ -17,7 +17,7 @@ end function
 function bundle default_values (const list xlist)
     /* Set default values. */
 
-    bundle self = null
+    bundle self = defbundle()
     scalar self.error = FALSE
     scalar self.verbose = 1
     string self.initializer = "random"
@@ -102,7 +102,7 @@ function bundle kmeans_fit (const list xlist "Features",
     check_required_pkg_version()
 
     if !exists(opts)
-        bundle opts = null
+        bundle opts = defbundle()
     endif
 
     errorif(sum(missing(xlist)),\
