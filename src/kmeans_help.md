@@ -1,4 +1,4 @@
-# KMeans Package
+# kmeans Package
 
 This package includes functionalities to identify unknown clusters of multidimensional data using the well known (at least in the machine-learning field) kmeans algorithm.
 
@@ -18,6 +18,12 @@ Source code and test script(s) can be found here: https://github.com/atecon/kmea
 
 The dialog box can be opened via `View -> k-Means`.
 
+Two choices are available:
+
+1. If you activate the checkbox "Show scree plot" the scree plot will be shown, and the parameter `n_clusters` is the maximum number of clusters to evaluate and plot. The returned bundle will contain only a matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
+
+2. If you activate the checkbox "Show pair-plot" the pair-plot will be shown, and the parameter `n_clusters` is the number of clusters to estimate. The returned bundle will contain detailed information about the estimation.
+
 
 # Public Functions
 
@@ -33,7 +39,7 @@ Execute the kmeans algorithm and estimate the clusters.
 
 - `xlist`: list, Features (regressors) to train the model.
 - `n_clusters`: int, Number of assumed clusters (default: 2)
-- `opts`: bundle, Optional parameters affecting the kmeans algorithm. You can pass the following parameters:
+- `opts`: bundle, Optional parameters affecting the kmeans algorithm. **You can pass the following parameters:**
 
     * `algorithm`: string, kmeans algorithm to use. Currently, only `full` is supported (classical EM-style algorithm).
     * `distance_type`: string, Name of the distance metric applied (default: `euclidean`). For more distance metrics, see gretl's built-in function `distance()`.
@@ -55,7 +61,7 @@ Execute the kmeans algorithm and estimate the clusters.
 - `pointsize`: scalar, Size of points being plotted when calling the `kmeans_plot()` function.
 - `total_ssq`: scalar, Sum of the squared distances of the features from its mean values
 - `use_circles`: bool, Plot circles instead of point when calling the `kmeans_plot()` function.
-- `within_variation_total`: scalar, Sum of the squared distances across all clusters.
+- `within_variation_total`: scalar, Sum of the squared distances across all clusters (*inertia*).
 - `within_variation_avg`: scalar, Sum of the average squared distances across all clusters.
 
 
@@ -106,7 +112,34 @@ Factorized scatter plot estimated clusters for each 2-dimensional combination of
 **Return:** Nothing.
 
 
+## kmeans_screeplot
+
+```
+kmeans_screeplot (const list xlist, const int max_clusters, const string filename[null], const bundle self[null])
+```
+
+This function plots the scree plot for the kmeans algorithm. The scree plot shows the within-cluster sum of squares (*inertia*) for different numbers of clusters (from 2 to `max_clusters`). The optimal number of clusters is the one where the within-cluster sum of squares starts to decrease more slowly.
+
+**Arguments:**
+
+- `xlist`: list, Features (regressors) used for plotting.
+- `max_clusters`: int, Maximum number of clusters to plot.
+- `filename`: string, Name of the file to save the plot (optional). If not provided, the plot will be shown on the screen.
+- `self`: bundle, Bundle for manipulating the plot. **Note, accepted options are:**
+
+    * The same as for the `kmeans_fit()` function for the `opts` bundle. Relevant for controlling the k-means algorithm.
+    * `verbose`: int, If `2` show summary for each model, else show nothing.
+    * `fontsize`: scalar, Font size for the plot (default: 14).
+    * `linewidth`: scalar, Line width for the plot (default: 2).
+
+**Return:** Matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
+
+
 # Changelog
+
+* **v0.4 (January 2025)**
+    * Add the new function `kmean_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
+    * Bugfix: The distance measure is now taken into account when calling the function via the GUI. Before, the default distance measure was always used.
 
 * **v0.3 (February 2024)**
     * Add GUI dialog

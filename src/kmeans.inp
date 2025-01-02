@@ -28,9 +28,11 @@ function bundle default_values (const list xlist)
     string self.distance_type = "euclidean"
     scalar self.nobs = $nobs
 
-    # For kmeans_plot()
+    # For kmeans_plot() and kmeans_screeplot()
     scalar self.use_circles = FALSE
     scalar self.pointsize = 1.0
+    scalar self.fontsize = 14
+    scalar self.linewidth = 2.0
 
     return self
 end function
@@ -295,13 +297,35 @@ function matrix centroids (const matrix features,
 end function
 
 
+function string get_distance_type (const int distance)
+    /* Only for kmeansGUI(). Maps the integer to the name of the respective distance measure. */
+
+    strings Distances = defarray("euclidean", "manhattan", "hamming", "chebyshev", "cosine", "mahalanobis")
+
+    return Distances[distance]
+end function
+
+
 function bundle kmeansGUI (const list X "Input",
                            const int n_clusters[2::2] "No. of clusters",
                            const int distance[1:6:1] {"euclidean", "manhattan", "hamming", "chebyshev", "cosine", "mahalanobis"},
-                           const int showPlot[0:1:0] "Show plot" {"No", "Yes"})
+                           const int showPlot[0:1:0] "Show pair-plot" {"No", "Yes"},
+                           const int showScreePlot [0:1:0] "Show scree plot" {"No", "Yes"})
     /* Function for creating GUI dialog box. */
 
-    bundle Model = kmeans_fit(X, n_clusters)
+    errorif(showPlot == TRUE && showScreePlot == TRUE, "Please choose only one plot to display.")
+
+    bundle self = defbundle()
+    self.distance_type = get_distance_type(distance)
+
+    if showScreePlot
+        matrix results = kmeans_screeplot(X, n_clusters, null, self)
+        bundle Model = _(results )
+
+        return Model
+    endif
+
+    bundle Model = kmeans_fit(X, n_clusters, self)
     kmeans_summary(Model)
     print Model.centroids
 
@@ -310,5 +334,48 @@ function bundle kmeansGUI (const list X "Input",
     endif
 
     return Model
+end function
+
+
+function matrix	kmeans_screeplot (const list xlist "Features",
+                                  const int maxCluster[2::2] "No. of clusters",
+                                  const string filename[null],
+                                  bundle opts[null] "Parameter bundle")
+    /* Create a scree plot. */
+
+    if !exists(opts)
+        bundle opts = defbundle()
+    endif
+    bundle self = set_bundle_and_get_defaults(xlist, opts)
+
+    string fname = exists(filename) ? filename : "display"
+    matrix k_values = transp(seq(2, maxCluster))
+    matrix results = k_values ~ mshape(NA, nelem(k_values), 1)
+    cnameset(results, defarray("# clusters", "inertia"))
+
+    loop i=1..nelem(k_values)
+        bundle model = kmeans_fit(xlist, k_values[i], opts)
+        if self.verbose == 2
+            kmeans_summary(model)
+        endif
+        if model.error
+            Error(sprintf("\nError: obtained an error when assuming %d clusters\n", k_values[i]))
+        endif
+        results[i,2] = model.within_variation_total
+    endloop
+
+    mplot = mreverse(results, TRUE)
+    plot mplot
+        options with-lines fit=none
+        printf "set ylabel 'Total within variation (inertia)' font ',%d'", self.fontsize
+        printf "set xlabel 'k clusters' font ',%d'", self.fontsize
+        printf "set xtics font ',%d'", self.fontsize
+        printf "set ytics font ',%d'", self.fontsize
+        printf "set linetype 1 lw %d", self.linewidth
+        literal set grid
+        literal set xtics 1
+    end plot --output="@fname"
+
+    return results
 end function
 

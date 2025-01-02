@@ -47,7 +47,16 @@ smpl full
 print cluster_id -o
 
 
+# Scree plot using standard values and distance metrics
+# ==========
+smpl x --no-missing
+matrix screen = kmeans_screeplot(x, 4)
+#matrix screen = kmeans_screeplot(x, 4, "screeplot.png") # save plot
+print screen
+
+
 # Predict
+# ==========
 smpl x --no-missing
 series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
 series cluster_id = Model.cluster_id          # must equal "fc_cluster"
@@ -76,21 +85,3 @@ print Model
 # Plot distinct clusters and tweak the plot
 scalar Model.transparency_level = 180  # this is an option supported by PairPlot
 kmeans_plot(x, Model)
-
-
-/*
-# Determine the optimal number of cluster by means of a screeplot
-# ===============================================================
-scalar max_clusters = 5
-matrix inertia = seq(2, max_clusters)' ~ mshape(NA, max_clusters - 1, 1)
-cnameset(inertia, "n_clusters inertia")
-
-loop i=2..max_clusters
-    bundle Model = kmeans_fit(x, $i)
-    inertia[i-1, 2] = Model.within_variation_total
-endloop
-
-gnuplot 2 1 --matrix=inertia --with-lines --output=display \
-    {set title 'Scree plot showing inertia as a function of no. of clusters'; }
-*/
-
