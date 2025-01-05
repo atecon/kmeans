@@ -161,8 +161,8 @@ function void add_variations (const matrix features, bundle *self)
     return: void */
 
     self.total_ssq = sumc(distance(features,\
-                                              self.distance_type,\
-                                              meanc(features))\
+                                   self.distance_type,\
+                                   meanc(features))\
                                     .^2)
 
     bundle B = within_cluster_variation(self.distances, self.cluster_id)
@@ -376,7 +376,7 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     mplot = mreverse(results, TRUE)
     plot mplot
         options with-lines fit=none
-        printf "set ylabel 'Total within variation (inertia)' font ',%d'", self.fontsize
+        printf "set ylabel 'Total within variation (inertia)' font ',%d' offset -1,0", self.fontsize
         printf "set xlabel 'k clusters' font ',%d'", self.fontsize
         printf "set xtics font ',%d'", self.fontsize
         printf "set ytics font ',%d'", self.fontsize
