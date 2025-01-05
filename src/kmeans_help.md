@@ -30,7 +30,7 @@ Two choices are available:
 ## kmeans_fit
 
 ```
-kmeans_fit (const list xlist, const int n_clusters[2::2], bundle opts[null])
+kmeans_fit (list xlist, int n_clusters[2::2], bundle opts[null])
 ```
 
 Execute the kmeans algorithm and estimate the clusters. It is required that `xlist` does not contain missing values. So, please make sure to clean the data before calling this function.
@@ -68,7 +68,7 @@ Execute the kmeans algorithm and estimate the clusters. It is required that `xli
 ## kmeans_predict
 
 ```
-kmeans_predict (const list xlist, const bundle Model)
+kmeans_predict (list xlist, bundle Model)
 ```
 
 Predict cluster belonging based on the estimated model.
@@ -84,7 +84,7 @@ Predict cluster belonging based on the estimated model.
 ## kmeans_summary
 
 ```
-kmeans_summary (const bundle Model)
+kmeans_summary (bundle Model)
 ```
 
 Print summarizing information on estimation step after having applied the `kmeans_fit()` function.
@@ -99,7 +99,7 @@ Print summarizing information on estimation step after having applied the `kmean
 ## kmeans_plot
 
 ```
-kmeans_plot (const list xlist, const bundle self[null])
+kmeans_plot (list xlist, bundle self[null])
 ```
 
 Factorized scatter plot estimated clusters for each 2-dimensional combination of features. This function calls the user-defined package "PairPlot" which must be installed.
@@ -115,7 +115,7 @@ Factorized scatter plot estimated clusters for each 2-dimensional combination of
 ## kmeans_screeplot
 
 ```
-kmeans_screeplot (const list xlist, const int max_clusters, const string filename[null], const bundle self[null])
+kmeans_screeplot (list xlist, int max_clusters, string filename[null], bundle self[null])
 ```
 
 This function plots the scree plot for the kmeans algorithm. The scree plot shows the within-cluster sum of squares (*inertia*) for different numbers of clusters (from 2 to `max_clusters`). The optimal number of clusters is the one where the within-cluster sum of squares starts to decrease more slowly.
@@ -125,7 +125,7 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 - `xlist`: list, Features (regressors) used for plotting.
 - `max_clusters`: int, Maximum number of clusters to plot.
 - `filename`: string, Name of the file to save the plot (optional). If not provided, the plot will be shown on the screen.
-- `self`: bundle, Bundle for manipulating the plot. **Note, accepted options are:**
+- `self`: bundle, Bundle for manipulating the plot (optional). **Note, accepted options are:**
 
     * The same as for the `kmeans_fit()` function for the `opts` bundle. Relevant for controlling the k-means algorithm.
     * `verbose`: int, If `2` show summary for each model, else show nothing.
