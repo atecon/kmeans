@@ -33,7 +33,7 @@ Two choices are available:
 kmeans_fit (const list xlist, const int n_clusters[2::2], bundle opts[null])
 ```
 
-Execute the kmeans algorithm and estimate the clusters.
+Execute the kmeans algorithm and estimate the clusters. It is required that `xlist` does not contain missing values. So, please make sure to clean the data before calling this function.
 
 **Arguments:**
 
