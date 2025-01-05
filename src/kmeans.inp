@@ -129,11 +129,18 @@ function bundle kmeans_fit (const list xlist "Features",
 
         bundle Tmp = compute_kmeans(self, features)
 
-        if Tmp.within_variation_total < self.within_variation_total # select minimizing draw
+        # select minimizing draw
+        if Tmp.within_variation_total < self.within_variation_total
+
             scalar self.within_variation_total = Tmp.within_variation_total
             matrix self.centroids = Tmp.centroids
             matrix cluster_id = Tmp.cluster_id
             matrix distances = Tmp.distances
+        endif
+
+        if self.verbose == 2
+            Info(sprintf("\nFinished the %d-th random draw.", draw_id))
+            flush
         endif
 
         draw_id++
@@ -228,7 +235,9 @@ function bundle compute_kmeans (const bundle self, const matrix features)
 
             iter++
         else
-            Warn(sprintf("Some assumed cluster has no observations. Stop searching after %d iterations.", iter))
+            if self.verbose == 2
+                Warn(sprintf("Some assumed cluster has no observations. Stop searching after %d iterations.", iter))
+            endif
             break
         endif
 
