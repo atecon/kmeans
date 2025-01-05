@@ -7,16 +7,16 @@ include kmeans.gfn
 EXAMPLE = 1
 
 if EXAMPLE == 1
+    open credscore.gdt --quiet
+    list x = Age Income Avgexp
+    scalar n_clusters = 3
+
+elif EXAMPLE == 2
     open mccullagh.gdt --quiet
 
     Type[1] = NA  # add missing value entry just for testing purpose
     list x = Months Acc Type
     n_clusters = 2
-
-elif EXAMPLE == 2
-    open credscore.gdt --quiet
-    list x = Age Income Avgexp
-    scalar n_clusters = 3
 
 elif EXAMPLE == 3
     # NOTE: You need to install the "PairPlot" package first
@@ -50,10 +50,9 @@ print cluster_id -o
 # Scree plot using standard values and distance metrics
 # ==========
 smpl x --no-missing
-matrix screen = kmeans_screeplot(x, 4)
-#matrix screen = kmeans_screeplot(x, 4, "screeplot.png") # save plot
-print screen
-
+matrix scree = kmeans_screeplot(x, 4)
+# matrix scree = kmeans_screeplot(x, 4, "screeplot.png") # save plot
+print scree
 
 # Predict
 # ==========
@@ -79,9 +78,9 @@ kmeans_plot(x, Model)
 # ==================
 # Pass some user-defined parameter values, too
 bundle opt = _(max_iter = 100, n_draws = 10, distance_type = "manhattan")
-bundle Model = kmeans_fit(x, 2, opt)
+bundle Model = kmeans_fit(x, n_clusters, opt)
 print Model
 
 # Plot distinct clusters and tweak the plot
-scalar Model.transparency_level = 180  # this is an option supported by PairPlot
+scalar Model.transparency_level = 120  # this is an option supported by PairPlot
 kmeans_plot(x, Model)
