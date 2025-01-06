@@ -129,8 +129,8 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 
     * The same as for the `kmeans_fit()` function for the `opts` bundle. Relevant for controlling the k-means algorithm.
     * `verbose`: int, If `2` show summary for each model, else show nothing.
-    * `fontsize`: scalar, Font size for the plot (default: 14).
-    * `linewidth`: scalar, Line width for the plot (default: 2).
+    * `fontsize`: scalar, Font size for the plot (default: 12).
+    * `linewidth`: scalar, Line width for the plot (default: 1.5).
 
 **Return:** Matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
 

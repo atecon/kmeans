@@ -31,8 +31,8 @@ function bundle default_values (const list xlist)
     # For kmeans_plot() and kmeans_screeplot()
     scalar self.use_circles = FALSE
     scalar self.pointsize = 1.0
-    scalar self.fontsize = 14
-    scalar self.linewidth = 2.0
+    scalar self.fontsize = 12
+    scalar self.linewidth = 1.5
 
     return self
 end function
