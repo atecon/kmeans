@@ -48,6 +48,7 @@ print cluster_id -o --range=1:15
 
 
 # Scree plot using standard values and distance metrics
+# Evaluate "inertia" for 1 to 4 clusters
 # ==========
 smpl x --no-missing
 matrix scree = kmeans_screeplot(x, 4)
