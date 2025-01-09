@@ -357,6 +357,8 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     endif
     bundle self = set_bundle_and_get_defaults(xlist, opts)
 
+    string fsize_cmd = inbundle(self,"fontsize") ? \
+        sprintf("font=\",%g\"", self.fontsize) : ""
     string fname = exists(filename) ? filename : "display"
     matrix k_values = transp(seq(2, maxCluster))
     matrix results = k_values ~ mshape(NA, nelem(k_values), 1)
@@ -375,11 +377,9 @@ function matrix	kmeans_screeplot (const list xlist "Features",
 
     mplot = mreverse(results, TRUE)
     plot mplot
-        options with-lines fit=none
-        printf "set ylabel 'Total within variation (inertia)' font ',%d'", self.fontsize
-        printf "set xlabel 'k clusters' font ',%d'", self.fontsize
-        printf "set xtics font ',%d'", self.fontsize
-        printf "set ytics font ',%d'", self.fontsize
+        options with-lines fit=none @fsize_cmd
+        literal set ylabel "Total within variation (inertia)"
+        literal set xlabel "k clusters"
         printf "set linetype 1 lw %d", self.linewidth
         literal set grid
         literal set xtics 1

@@ -44,15 +44,17 @@ series cluster_id = Model.cluster_id
 # Look for eventual gaps for observations for which some of the input variables
 # are missing
 smpl full
-print cluster_id -o
+print cluster_id -o --range=1:15
 
 
 # Scree plot using standard values and distance metrics
 # ==========
 smpl x --no-missing
 matrix scree = kmeans_screeplot(x, 4)
-# matrix scree = kmeans_screeplot(x, 4, "screeplot.png") # save plot
+# Alternatively, save plot and set font size
+#matrix scree = kmeans_screeplot(x, 4, "screeplot.png", _(fontsize=14))
 print scree
+
 
 # Predict
 # ==========
