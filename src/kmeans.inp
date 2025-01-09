@@ -359,7 +359,7 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     bundle self = set_bundle_and_get_defaults(xlist, opts)
 
     string fsize_cmd = inbundle(self,"fontsize") ? \
-        sprintf("font=\",%g\"", self.fontsize) : ""
+        sprintf("font=\",%d\"", self.fontsize) : ""
     string fname = exists(filename) ? filename : "display"
     matrix k_values = transp(seq(1, maxCluster))
     matrix results = k_values ~ mshape(NA, nelem(k_values), 1)
