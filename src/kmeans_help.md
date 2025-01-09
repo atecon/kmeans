@@ -130,7 +130,7 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
     * The same as for the `kmeans_fit()` function for the `opts` bundle. Relevant for controlling the k-means algorithm.
     * `verbose`: int, If `2` show summary for each model, else show nothing.
     * `fontsize`: scalar, Font size for the plot.
-    * `linewidth`: scalar, Line width for the plot (default: 1.5).
+    * `linewidth`: scalar, Line width for the plot.
 
 **Return:** Matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
 
@@ -139,6 +139,7 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 
 * **v0.4 (January 2025)**
     * Add the new function `kmean_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
+    * Change default values for parameters `pointsize` and `fontsize` in the `kmeans_plot()` function. Now set by gretl's default values.
     * Bugfix: The distance measure is now taken into account when calling the function via the GUI. Before, the default distance measure was always used.
 
 * **v0.3 (February 2024)**

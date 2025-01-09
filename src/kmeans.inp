@@ -30,8 +30,6 @@ function bundle default_values (const list xlist)
 
     # For kmeans_plot() and kmeans_screeplot()
     scalar self.use_circles = FALSE
-    scalar self.pointsize = 1.0
-    scalar self.fontsize = 12
     scalar self.linewidth = 1.5
 
     return self
@@ -358,8 +356,7 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     endif
     bundle self = set_bundle_and_get_defaults(xlist, opts)
 
-    string fsize_cmd = inbundle(self,"fontsize") ? \
-        sprintf("font=\",%d\"", self.fontsize) : ""
+    string fsize_cmd = inbundle(opts,"fontsize") ? sprintf("font=\",%d\"", opts.fontsize) : ""
     string fname = exists(filename) ? filename : "display"
     matrix k_values = transp(seq(1, maxCluster))
     matrix results = k_values ~ mshape(NA, nelem(k_values), 1)
