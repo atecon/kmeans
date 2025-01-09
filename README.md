@@ -118,7 +118,7 @@ Factorized scatter plot estimated clusters for each 2-dimensional combination of
 kmeans_screeplot (list xlist, int max_clusters, string filename[null], bundle self[null])
 ```
 
-This function plots the scree plot for the kmeans algorithm. The scree plot shows the within-cluster sum of squares (*inertia*) for different numbers of clusters (from 2 to `max_clusters`). The optimal number of clusters is the one where the within-cluster sum of squares starts to decrease more slowly.
+This function plots the scree plot for the kmeans algorithm. The scree plot shows the within-cluster sum of squares (*inertia*) for different numbers of clusters (from 1 to `max_clusters`). The optimal number of clusters is the one where the within-cluster sum of squares starts to decrease more slowly.
 
 **Arguments:**
 
