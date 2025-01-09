@@ -123,7 +123,7 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 **Arguments:**
 
 - `xlist`: list, Features (regressors) used for plotting.
-- `max_clusters`: int, Maximum number of clusters to plot.
+- `max_clusters`: int, Maximum number of clusters to plot (default: 3).
 - `filename`: string, Name of the file to save the plot (optional). If not provided, the plot will be shown on the screen.
 - `self`: bundle, Bundle for manipulating the plot (optional). **Note, accepted options are:**
 
