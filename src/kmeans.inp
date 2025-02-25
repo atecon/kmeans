@@ -40,9 +40,14 @@ function matrix initialize_clusters (const matrix features, const bundle self)
     /* Randomly assign observations to some initial cluster.
     return: series, Randomly assign 1 to n_cluster ID for each observation. */
 
-    if self.initializer == "random"
+
+    string initializer = tolower(self.initializer)
+    # "pca" is only supported for n_clusters > 1
+    initializer = self.n_clusters == 1 ? "random" : initializer
+
+    if initializer == "random"
         return mrandgen(i, 1, self.n_clusters, $nobs, 1)
-    elif tolower(self.initializer) == "pca"
+    elif initializer == "pca"
         bundle B = self
         matrix B.centroids = init_centroids_by_pca(features, B.n_clusters)
         list xlist = mat2list(features)
@@ -54,10 +59,13 @@ function matrix initialize_clusters (const matrix features, const bundle self)
 end function
 
 
-function matrix init_centroids_by_pca (const matrix features, scalar n_clusters)
+function matrix init_centroids_by_pca (const matrix features,
+                                       scalar n_clusters)
     /* Try to pick data points that are as far apart as possible by means of PCA.
     Idea borrowed from Jack Lucchetti.
     return: Matrix of centroids for each cluster (rows) and each feature (columns). */
+
+    errorif(n_clusters < 2, "At least two clusters are required.")
 
     scalar n = rows(features)
     matrix mask = 1 + seq(0, (n_clusters - 1)) \
@@ -121,10 +129,9 @@ function bundle kmeans_fit (const list xlist "Features",
 
     loop self.n_draws  # evaluate several initial random draws of clusters
         if self.verbose == 2
-            Info(sprintf("\nStart the %d-th random draw.", draw_id))
+            Info(sprintf("\nStart random draw: %d", draw_id))
             flush
         endif
-
         bundle Tmp = compute_kmeans(self, features)
 
         # select minimizing draw
