@@ -137,8 +137,11 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 
 # Changelog
 
+* **v0.5 (February 2025)**
+    * Bugfix: in case of a single cluster, switch to "random" initializer as "pca" would fail; throw error if pca initializer is called for a single cluster
+
 * **v0.4 (January 2025)**
-    * Add the new function `kmean_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
+    * Add the new function `kmeans_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
     * Change default values for parameters `pointsize` and `fontsize` in the `kmeans_plot()` function. Now set by gretl's default values.
     * Bugfix: The distance measure is now taken into account when calling the function via the GUI. Before, the default distance measure was always used.
 
