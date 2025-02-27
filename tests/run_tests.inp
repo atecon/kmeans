@@ -6,6 +6,7 @@ include assertion.gfn
 
 include "./src/kmeans.inp" --force
 include distances.gfn
+include logging.gfn
 
 nulldata 40
 matrix m = mnormal($nobs, 6)
@@ -172,8 +173,19 @@ test_kmeans_fit(n_clusters)
 
 
 
+set seed 12345432
+open abdata.gdt
+list X = k w ys
+depvar = n
+list Z = depvar X
+list P = const
+loop foreach i Z
+    P += genseries("p$i", pmean($i))
+endloop
 
-
+scalar n_groups = 12
+catch kbun = kmeans_fit(P, n_groups, _(verbose=2))
+assert($error != FALSE) # Error expected
 
 
 
