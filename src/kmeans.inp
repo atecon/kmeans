@@ -192,6 +192,7 @@ function void kmeans_summary (const bundle self)
     printf "  No. of clusters: %d\n", self.n_clusters
     printf "  Distance type: '%s'\n", self.distance_type
     printf "  Algorithm: '%s'\n", self.algorithm
+    printf "  Initializer: '%s'\n", self.initializer
     printf "  Max. iterations: %d\n", self.max_iter
     #printf "  Actual iterations: %d\n", self.actual_iter
     printf "  No. of random draws: %d\n", self.n_draws
