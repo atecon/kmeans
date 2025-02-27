@@ -76,10 +76,11 @@ kmeans_plot(x, Model)
 */
 
 
-# Manhattan distance
+# Manhattan distance + PCA-based initializer
 # ==================
 # Pass some user-defined parameter values, too
-bundle opt = _(max_iter = 100, n_draws = 10, distance_type = "manhattan")
+bundle opt = _(max_iter = 100, n_draws = 10,
+               distance_type = "manhattan", initializer = "pca")
 bundle Model = kmeans_fit(x, n_clusters, opt)
 print Model
 
