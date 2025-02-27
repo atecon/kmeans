@@ -139,6 +139,7 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 
 * **v0.5 (February 2025)**
     * Bugfix: in case of a single cluster, switch to "random" initializer as "pca" would fail; throw error if pca initializer is called for a single cluster
+    * Improvement: Improve robustness if empty clusters are estimated (e.g., due to bad random initialization of centroids)
 
 * **v0.4 (January 2025)**
     * Add the new function `kmeans_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
