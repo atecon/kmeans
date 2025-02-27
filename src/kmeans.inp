@@ -287,7 +287,11 @@ function bundle within_cluster_variation (const matrix distances,
     loop i=1..n_clusters
         matrix mask = (cluster_id .= $i)
         scalar n = sum(mask)
-        B.sum_of_avg_variation += sum(selifr(d2, mask).^2) * (1 / n)
+        if n == 0
+            B.sum_of_avg_variation += sum(d2).^2 * (1/rows(d2))
+        else
+            B.sum_of_avg_variation += sum(selifr(d2, mask).^2) * (1 / n)
+        endif
     endloop
 
     return B
@@ -305,7 +309,12 @@ function matrix centroids (const matrix features,
 
     loop i=1..n_clusters
         matrix mask = (cluster_id .= $i)
-        centroids[i,] = meanc(selifr(features, mask))
+        if sum(mask) == 0  # no observations in cluster - may happen at the beginning
+            centroids[i,] = 0  # initialize with zeros
+        else
+            centroids[i,] = meanc(selifr(features, mask))
+        endif
+
         row_labels[i] = sprintf("Centroid=%d", $i)
     endloop
 
