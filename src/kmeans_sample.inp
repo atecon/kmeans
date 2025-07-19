@@ -43,7 +43,10 @@ kmeans_summary(Model)  # Print summary of estimation
 # ==================
 # Compute silhouette samples and scores
 series sil_samples = kmeans_silhouette_samples(Model, x)
-printf "Mean silhouette score: %.3f\n", kmeans_silhouette_score(Model, x)
+
+printf "Mean silhouette score: %.3f\n", kmeans_silhouette_score(Model, x)[1]
+printf "Mean silhouette score per cluster:\n %12.3f\n", kmeans_silhouette_score(Model, x, TRUE)
+
 print sil_samples -o --range=1:15
 # Silhouette plot
 kmeans_silhouette_plot(Model, x, _(height=750))
