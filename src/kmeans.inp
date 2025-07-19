@@ -499,6 +499,7 @@ function void kmeans_silhouette_plot(const bundle Model,
     scalar columns = inbundle(opts, "columns") ? opts.columns : 1
     scalar rows = ceil(n_clusters / columns)
     scalar base_margin = inbundle(opts, "base_margin") ? opts.base_margin : 2.5
+    scalar pointsize = inbundle(opts, "pointsize") ? opts.pointsize : 0.75
 
     # Calculate margins based on plot size and layout
     scalar margin_scale = min(width, height) / (rows * 300)
@@ -525,7 +526,7 @@ function void kmeans_silhouette_plot(const bundle Model,
             printf "set yrange[%f:%f]", ymin, ymax
             printf "set tmargin %f", tmargin
             printf "set bmargin %f", bmargin
-            printf "set linetype 1 ps 0.75 pt 7"
+            printf "set linetype 1 ps %g pt 7", pointsize
             printf "set linetype 2 lw 1.5 dt 2"
             literal set nokey
         end plot --outbuf=plotfiles[k]
