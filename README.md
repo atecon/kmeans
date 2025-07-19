@@ -135,7 +135,71 @@ This function plots the scree plot for the kmeans algorithm. The scree plot show
 **Return:** Matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
 
 
+## kmeans_silhouette_samples
+
+```
+kmeans_silhouette_samples (bundle Model, list xlist)
+```
+
+Compute the silhouette sample value for each observation in the fitted kmeans model. The silhouette value measures how similar an observation is to its own cluster compared to other clusters.
+
+**Reference:** https://en.wikipedia.org/wiki/Silhouette_(clustering)
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+
+**Return:** Series holding the silhouette value for each observation.
+
+
+## kmeans_silhouette_score
+
+```
+kmeans_silhouette_score (bundle Model, list xlist)
+```
+
+Compute the mean silhouette score for all samples in the fitted kmeans model. The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar.
+
+**Reference:** https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+
+**Return:** Scalar value representing the mean silhouette score.
+
+
+## kmeans_silhouette_plot
+
+```
+kmeans_silhouette_plot (bundle Model, list xlist, bundle opts[null])
+```
+
+Create a silhouette plot for the fitted kmeans model. Each cluster is plotted separately, showing the silhouette value for each observation. Plot options can be passed via the `opts` bundle.
+
+**Reference:** https://en.wikipedia.org/wiki/Silhouette_(clustering)
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+- `opts`: bundle, Optional parameters for controlling the plot. The following options are supported:
+    * `filename`: string, Name of the file to save the plot. If not provided, the plot will be shown on the screen.
+    * `width`: scalar, Width of the plot in pixels (default: 600).
+    * `height`: scalar, Height of the plot in pixels (default: 900).
+    * `columns`: scalar, Number of columns in the grid layout for clusters (default: 1).
+    * `base_margin`: scalar, Base margin for top and bottom plot margins (default: 2.5).
+    * `pointsize`: scalar, Size of points (default: 0.75)
+
+**Return:** Nothing.
+
+
 # Changelog
+
+* **v0.6 (July 2025)**
+    * Add new silhouette functions: `kmeans_silhouette_samples()`, `kmeans_silhouette_score()`, and `kmeans_silhouette_plot()`
 
 * **v0.5 (February 2025)**
     * Bugfix: in case of a single cluster, switch to "random" initializer as "pca" would fail; throw error if pca initializer is called for a single cluster
