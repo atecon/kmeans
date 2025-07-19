@@ -407,3 +407,65 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     return results
 end function
 
+
+function series kmeans_silhouette_samples (const bundle Model, const list xlist)
+    /* Compute the silhouette samples for each observation. */
+
+    matrix features = {xlist}
+    matrix cluster_id = Model.cluster_id
+    series silhouette_samples = zeros(Model.nobs, 1)
+
+    loop i=1..Model.nobs
+        scalar own_cluster = cluster_id[i]
+        matrix mask_own = (cluster_id .= own_cluster)
+        matrix mask_other = (cluster_id .!= own_cluster)
+
+        # a(i): mean distance to own cluster (excluding self)
+        # can be interpreted as a measure of how well i is assigned to its
+        # cluster (the smaller the value, the better the assignment).
+        matrix own_points = selifr(features, mask_own)
+        if sum(mask_own) > 1
+            matrix dists_own = distance(features[i,], Model.distance_type, own_points)
+            scalar a_i = (sum(dists_own) - 0) / (nelem(own_points) - 1)
+        else
+            scalar a_i = 0
+        endif
+
+        # b(i): minimum mean distance to other clusters
+        scalar b_i = $huge
+        loop k=1..Model.n_clusters
+            if k == own_cluster
+                continue  # skip own cluster
+            endif
+            matrix mask_k = (cluster_id .= k)
+            if sum(mask_k) > 0
+                matrix other_points = selifr(features, mask_k)
+                matrix dists_other = distance(features[i,], Model.distance_type, other_points)
+                scalar mean_dist = sum(dists_other) / nelem(dists_other)
+                if mean_dist < b_i
+                    b_i = mean_dist  # update the "neigboring cluster"
+                endif
+            endif
+        endloop
+
+        silhouette_samples[i] = compute_silhouette_sample(a_i, b_i)
+    endloop
+
+    return silhouette_samples
+end function
+
+
+function scalar compute_silhouette_sample (const scalar a_i, const scalar b_i)
+    /* Compute the silhouette sample for a single observation.
+       URL: https://en.wikipedia.org/wiki/Silhouette_(clustering) */
+
+    if a_i == 0 && b_i == 0
+        return 0  # avoid division by zero
+    elif a_i == b_i
+        return 0  # equal distances to own and other clusters
+    elif a_i < b_i
+        return 1 - (a_i / b_i)  # well assigned to own cluster
+    else # a_i > b_i
+        return b_i / a_i - 1  # poorly assigned to own cluster
+    endif
+end function
