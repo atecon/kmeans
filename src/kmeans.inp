@@ -471,12 +471,23 @@ function scalar compute_silhouette_sample (const scalar a_i, const scalar b_i)
 end function
 
 
-function scalar kmeans_silhouette_score (const bundle Model, const list xlist)
+function numeric kmeans_silhouette_score (const bundle Model,
+                                          const list xlist,
+                                          const bool global [TRUE])
     /* Compute the mean Silhouette Coefficient of all samples. */
 
     series silhouette_samples = kmeans_silhouette_samples(Model, xlist)
-    scalar score = mean(silhouette_samples)
-    return score
+    if global == TRUE
+        score = mean(silhouette_samples)
+        return score
+    endif
+
+    series cluster_id = Model.cluster_id
+    matrix score = 0
+    matrix mean_per_cluster = aggregate(silhouette_samples, cluster_id, "mean")[,{1,3}]
+    cnameset(mean_per_cluster, defarray("Cluster", "mean(Score)"))
+
+    return mean_per_cluster
 end function
 
 
