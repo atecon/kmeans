@@ -156,10 +156,10 @@ Compute the silhouette sample value for each observation in the fitted kmeans mo
 ## kmeans_silhouette_score
 
 ```
-kmeans_silhouette_score (bundle Model, list xlist)
+kmeans_silhouette_score (bundle Model, list xlist, bool global[FALSE])
 ```
 
-Compute the mean silhouette score for all samples in the fitted kmeans model. The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar.
+Compute the mean silhouette score for all samples in the fitted kmeans model if the optional parameter `global` is set to `TRUE`. The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar. If `global` is set to `FALSE`, the mean silhouette score is computed for each cluster separately.
 
 **Reference:** https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html
 
@@ -167,8 +167,9 @@ Compute the mean silhouette score for all samples in the fitted kmeans model. Th
 
 - `Model`: bundle, Model object returned by the `kmeans_fit()` function.
 - `xlist`: list, Features (regressors) used for clustering.
+- `global`: bool, If TRUE (default) compute the mean silhouette score for all samples, otherwise compute it for each cluster separately.
 
-**Return:** Scalar value representing the mean silhouette score.
+**Return:** Scalar value representing the mean silhouette score if `global` is set to TRUE, otherwise a matrix is returned  (columns refer to the cluster and the score).
 
 
 ## kmeans_silhouette_plot
