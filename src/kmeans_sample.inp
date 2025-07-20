@@ -4,7 +4,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 1
+EXAMPLE = 3
 
 if EXAMPLE == 1
     open credscore.gdt --quiet
@@ -41,11 +41,10 @@ kmeans_summary(Model)  # Print summary of estimation
 
 # Silhouette samples
 # ==================
-# Compute silhouette samples and scores
+# Compute silhouette samples (aka coefficients) and scores
 series sil_samples = kmeans_silhouette_samples(Model, x)
-
 printf "Mean silhouette score: %.3f\n", kmeans_silhouette_score(Model, x)[1]
-printf "Mean silhouette score per cluster:\n %12.3f\n", kmeans_silhouette_score(Model, x, TRUE)
+printf "Mean silhouette score per cluster:\n %12.3f\n", kmeans_silhouette_score(Model, x, FALSE)
 
 print sil_samples -o --range=1:15
 # Silhouette plot
