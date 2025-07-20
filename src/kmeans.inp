@@ -426,14 +426,14 @@ function series kmeans_silhouette_samples (const bundle Model, const list xlist)
         matrix own_points = selifr(features, mask_own)
         if sum(mask_own) > 1
             # 1st entry is the distance to self, so we skip it
-            matrix dists_own = distance(features[i,], Model.distance_type, own_points)[2:]
+            matrix dists_own = distance(features[i,], Model.distance_type, own_points)[2:]'
             # The pairwise distance is the same as the this one:
             /* matrix dat = features[i,] | own_points
             matrix dists_own2 = unvech(distance(dat, Model.distance_type), 0)[2:,1]
             out = dists_own' ~ dists_own2
             print out */
 
-            scalar a_i = (sum(dists_own) - 0) / (nelem(own_points) - 1)
+            scalar a_i = meanc(dists_own)  # mean distance to own cluster
         else
             scalar a_i = 0
         endif
