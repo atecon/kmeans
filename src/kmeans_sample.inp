@@ -4,7 +4,7 @@ set seed 34
 include kmeans.gfn
 
 # Select an example to run
-EXAMPLE = 3
+EXAMPLE = 1
 
 if EXAMPLE == 1
     open credscore.gdt --quiet
