@@ -489,8 +489,9 @@ function numeric kmeans_silhouette_score (const bundle Model,
         return score
     endif
 
+    series cluster_id = Model.cluster_id
     matrix score = 0
-    matrix mean_per_cluster = aggregate(silhouette_samples, Model.cluster_id, "mean")[,{1,3}]
+    matrix mean_per_cluster = aggregate(silhouette_samples, cluster_id, "mean")[,{1,3}]
     cnameset(mean_per_cluster, defarray("Cluster", "mean(Score)"))
 
     return mean_per_cluster
