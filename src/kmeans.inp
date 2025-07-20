@@ -517,6 +517,8 @@ function void kmeans_silhouette_plot(const bundle Model,
     scalar rows = ceil(n_clusters / columns)
     scalar base_margin = inbundle(opts, "base_margin") ? opts.base_margin : 2.5
     scalar pointsize = inbundle(opts, "pointsize") ? opts.pointsize : 0.75
+    scalar fontsize = inbundle(opts, "fontsize") ? opts.fontsize : 12
+    string fsize_cmd = sprintf("font=\",%d\"", fontsize)
 
     # Calculate margins based on plot size and layout
     scalar margin_scale = min(width, height) / (rows * 300)
@@ -536,7 +538,8 @@ function void kmeans_silhouette_plot(const bundle Model,
         cluster_data ~= silhouette_score
 
         plot cluster_data
-            options fit=none time-series single-yaxis with-lines=2
+            options fit=none time-series single-yaxis with-lines=2 \
+                    @fsize_cmd
             printf "set ylabel 'Cluster %d (n=%d)'", k, rows(cluster_data)
             literal set grid
             literal set boxwidth 0.8
