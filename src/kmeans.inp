@@ -418,14 +418,14 @@ function series kmeans_silhouette_samples (const bundle Model, const list xlist)
 
     loop i=1..Model.nobs
         scalar own_cluster = cluster_id[i]
-        matrix mask_own = (cluster_id .= own_cluster)
-        matrix mask_other = (cluster_id .!= own_cluster)
+        matrix own_cluster_mask = (cluster_id .= own_cluster)
+        #matrix mask_other = (cluster_id .!= own_cluster)  # TODO: remove if not needed
 
         # a(i): mean distance to own cluster (excluding self)
         # can be interpreted as a measure of how well i is assigned to its
         # cluster (the smaller the value, the better the assignment).
-        matrix own_points = selifr(features, mask_own)
-        if sum(mask_own) > 1
+        matrix own_points = selifr(features, own_cluster_mask)
+        if sum(own_cluster_mask) > 1
             # 1st entry is the distance to self, so we skip it
             matrix dists_own = distance(features[i,], Model.distance_type, own_points)[2:]'
             # The pairwise distance is the same as the this one:
@@ -449,9 +449,9 @@ function series kmeans_silhouette_samples (const bundle Model, const list xlist)
             if sum(mask_k) > 0
                 matrix other_points = selifr(features, mask_k)
                 matrix dists_other = distance(features[i,], Model.distance_type, other_points)
-                scalar mean_dist = sum(dists_other) / nelem(dists_other)
-                if mean_dist < b_i
-                    b_i = mean_dist  # update the "neigboring cluster"
+                scalar mean_other_distance = sum(dists_other) / nelem(dists_other)
+                if mean_other_distance < b_i
+                    b_i = mean_other_distance  # update the "neigboring cluster"
                 endif
             endif
         endloop
