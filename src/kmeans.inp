@@ -229,20 +229,20 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     matrix current_cluster_id = initialize_clusters(features, self)
     scalar n_clusters = rows(values(current_cluster_id))
     scalar iter = 1
-    matrix distances = mshape($huge, rows(features), n_clusters)
-    scalar inertia = $huge
-    scalar inertia_new = inertia
+    matrix min_distances = mshape($huge, rows(features), n_clusters)
+    scalar current_inertia = $huge
+    scalar updated_inertia = current_inertia
     scalar Model.error = FALSE
 
     loop while iter <= self.max_iter
         matrix centroids = centroids(features, current_cluster_id)
-        matrix distances_new = distance(features, self.distance_type, centroids)
-        matrix new_cluster_id = iminr(distances_new)
+        matrix all_distances = distance(features, self.distance_type, centroids)
+        matrix new_cluster_id = iminr(all_distances)
 
         if rows(values(new_cluster_id)) == n_clusters  # check + update
             matrix centroids = centroids(features, new_cluster_id)
             current_cluster_id = new_cluster_id
-            matrix distances = minr(distances_new)  # select minimum from all
+            matrix min_distances = minr(all_distances)  # select minimum from all
 
             iter++
         else
@@ -250,21 +250,22 @@ function bundle compute_kmeans (const bundle self, const matrix features)
             break
         endif
 
-        inertia_new = within_cluster_variation(distances, current_cluster_id)["sum_of_total_variation"]
-        inertia_delta = inertia - inertia_new
-        inertia = inertia_new
+        updated_inertia = within_cluster_variation(min_distances, current_cluster_id)["sum_of_total_variation"]
+        intertia_change = current_inertia - updated_inertia
+        current_inertia = updated_inertia
 
-        if inertia_delta >= 0 && inertia_delta < self.tolerance
+        if intertia_change >= 0 && intertia_change < self.tolerance
             if self.verbose == 2
-                Info(sprintf("Converged after %d out of %d iterations (within total variation = %.5f).", iter, self.max_iter, inertia))
+                Info(sprintf("Converged after %d out of %d iterations (within total variation = %.5f).",
+                             iter, self.max_iter, current_inertia))
                 flush
             endif
             break
         endif
     endloop
 
-    matrix Model.distances = distances
-    scalar Model.within_variation_total = inertia
+    matrix Model.distances = min_distances
+    scalar Model.within_variation_total = current_inertia
     matrix Model.cluster_id = current_cluster_id
     matrix Model.centroids = centroids
 
