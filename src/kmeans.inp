@@ -226,8 +226,8 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     return: bundle, output for a given random draw of cluster association. */
 
     bundle Model
-    matrix cluster_id = initialize_clusters(features, self)
-    scalar n_clusters = rows(values(cluster_id))
+    matrix current_cluster_id = initialize_clusters(features, self)
+    scalar n_clusters = rows(values(current_cluster_id))
     scalar iter = 1
     matrix distances = mshape($huge, rows(features), n_clusters)
     scalar inertia = $huge
@@ -235,13 +235,13 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     scalar Model.error = FALSE
 
     loop while iter <= self.max_iter
-        matrix centroids = centroids(features, cluster_id)
+        matrix centroids = centroids(features, current_cluster_id)
         matrix distances_new = distance(features, self.distance_type, centroids)
-        matrix cluster_id_new = iminr(distances_new)
+        matrix new_cluster_id = iminr(distances_new)
 
-        if rows(values(cluster_id_new)) == n_clusters  # check + update
-            matrix centroids = centroids(features, cluster_id_new)
-            cluster_id = cluster_id_new
+        if rows(values(new_cluster_id)) == n_clusters  # check + update
+            matrix centroids = centroids(features, new_cluster_id)
+            current_cluster_id = new_cluster_id
             matrix distances = minr(distances_new)  # select minimum from all
 
             iter++
@@ -250,7 +250,7 @@ function bundle compute_kmeans (const bundle self, const matrix features)
             break
         endif
 
-        inertia_new = within_cluster_variation(distances, cluster_id)["sum_of_total_variation"]
+        inertia_new = within_cluster_variation(distances, current_cluster_id)["sum_of_total_variation"]
         inertia_delta = inertia - inertia_new
         inertia = inertia_new
 
@@ -265,7 +265,7 @@ function bundle compute_kmeans (const bundle self, const matrix features)
 
     matrix Model.distances = distances
     scalar Model.within_variation_total = inertia
-    matrix Model.cluster_id = cluster_id
+    matrix Model.cluster_id = current_cluster_id
     matrix Model.centroids = centroids
 
     return Model
