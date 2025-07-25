@@ -49,8 +49,8 @@ function matrix initialize_clusters (const matrix features, const bundle self)
         bundle B = self
         matrix B.centroids = init_centroids_by_pca(features, B.n_clusters)
         list xlist = mat2list(features)
-        matrix cluster_id = kmeans_predict(xlist, B)
-        return cluster_id
+        matrix initial_cluster_id = kmeans_predict(xlist, B)
+        return initial_cluster_id
     else
         funcerr "Initializer is not supported."
     endif
@@ -65,12 +65,12 @@ function matrix init_centroids_by_pca (const matrix features,
 
     errorif(n_clusters < 2, "At least two clusters are required.")
 
-    scalar n = rows(features)
+    scalar n_obs = rows(features)
     matrix mask = 1 + seq(0, (n_clusters - 1)) \
-                  * floor((n - 1) / (n_clusters - 1))
-    matrix f = princomp(features, 1, 1) ~ seq(1, n)'
-    f = msortby(f, 1)
-    mask = f[mask, 2]
+                  * floor((n_obs - 1) / (n_clusters - 1))
+    matrix pca_matrix = princomp(features, 1, 1) ~ seq(1, n_obs)'
+    pca_matrix = msortby(pca_matrix, 1)
+    mask = pca_matrix[mask, 2]
 
     return features[mask,]
 end function
