@@ -419,7 +419,6 @@ function series kmeans_silhouette_samples (const bundle Model, const list xlist)
     loop i=1..Model.nobs
         scalar own_cluster = cluster_id[i]
         matrix own_cluster_mask = (cluster_id .= own_cluster)
-        #matrix mask_other = (cluster_id .!= own_cluster)  # TODO: remove if not needed
 
         # a(i): mean distance to own cluster (excluding self)
         # can be interpreted as a measure of how well i is assigned to its
