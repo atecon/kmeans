@@ -4,7 +4,7 @@ version = 0.6
 date = 2025-07-25
 description = K-means clustering algorithm
 tags = C13 C52
-min-version = 2022a
+min-version = 2023c
 public = kmeans_fit kmeans_predict kmeans_plot kmeans_summary \
     kmeansGUI kmeans_screeplot \
     kmeans_sil_samples kmeans_sil_score kmeans_sil_plot
