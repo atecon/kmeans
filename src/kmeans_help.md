@@ -205,6 +205,7 @@ Create a silhouette plot for the fitted kmeans model. Each cluster is plotted se
 
 * **v0.6 (July 2025)**
     * Add new silhouette functions: `kmeans_sil_samples()`, `kmeans_sil_score()`, and `kmeans_sil_plot()`
+    * raise minimum version of gretl to 2023c
 
 * **v0.5 (February 2025)**
     * Bugfix: in case of a single cluster, switch to "random" initializer as "pca" would fail; throw error if pca initializer is called for a single cluster
