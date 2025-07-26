@@ -205,6 +205,7 @@ Create a silhouette plot for the fitted kmeans model. Each cluster is plotted se
 
 * **v0.6 (July 2025)**
     * Add new silhouette functions: `kmeans_sil_samples()`, `kmeans_sil_score()`, and `kmeans_sil_plot()`
+    * GUI dialog: Add option to plot silhouette analysis and general improvements
     * raise minimum version of gretl to 2023c
 
 * **v0.5 (February 2025)**
