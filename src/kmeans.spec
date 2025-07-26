@@ -1,7 +1,7 @@
 author = Artur Tarassow
 email = atecon@posteo.de
 version = 0.6
-date = 2025-07-25
+date = 2025-07-26
 description = K-means clustering algorithm
 tags = C13 C52
 min-version = 2023c
