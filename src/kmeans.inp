@@ -280,10 +280,10 @@ function bundle compute_kmeans (const bundle self, const matrix features)
         endif
 
         updated_inertia = within_cluster_variation(min_distances, current_cluster_id)["sum_of_total_variation"]
-        intertia_change = current_inertia - updated_inertia
+        inertia_change = current_inertia - updated_inertia
         current_inertia = updated_inertia
 
-        if intertia_change >= 0 && intertia_change < self.tolerance
+        if inertia_change >= 0 && inertia_change < self.tolerance
             if self.verbose == 2
                 Info(sprintf("Converged after %d out of %d iterations (within total variation = %.5f).",
                              iter, self.max_iter, current_inertia))
