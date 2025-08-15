@@ -37,7 +37,8 @@ function bundle default_values (const list xlist)
 end function
 
 
-function matrix initialize_clusters (const matrix features, const bundle self)
+function matrix initialize_clusters (const matrix features,
+                                     const bundle self)
     /* Initialize clusters. */
 
     string initializer = tolower(self.initializer)
