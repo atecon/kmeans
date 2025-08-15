@@ -264,12 +264,12 @@ function bundle compute_kmeans (const bundle self, const matrix features)
     scalar Model.error = FALSE
 
     loop while iter <= self.max_iter
-        matrix centroids = centroids(features, current_cluster_id)
-        matrix all_distances = distance(features, self.distance_type, centroids)
+        matrix centroids = compute_centroids(features, current_cluster_id)
+        matrix all_distances = compute_distance(features, self.distance_type, centroids)
         matrix new_cluster_id = iminr(all_distances)
 
         if rows(values(new_cluster_id)) == n_clusters  # check + update
-            matrix centroids = centroids(features, new_cluster_id)
+            matrix centroids = compute_centroids(features, new_cluster_id)
             current_cluster_id = new_cluster_id
             matrix min_distances = minr(all_distances)  # select minimum from all
 
