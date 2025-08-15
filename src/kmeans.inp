@@ -461,7 +461,7 @@ function series kmeans_sil_samples (const bundle Model, const list xlist)
         matrix own_points = selifr(features, own_cluster_mask)
         if sum(own_cluster_mask) > 1
             # 1st entry is the distance to self, so we skip it
-            matrix dists_own = distance(features[i,], Model.distance_type, own_points)[2:]'
+            matrix dists_own = compute_distance(features[i,], Model.distance_type, own_points)[2:]'
             # The pairwise distance is the same as the this one:
             /* matrix dat = features[i,] | own_points
             matrix dists_own2 = unvech(distance(dat, Model.distance_type), 0)[2:,1]
@@ -482,7 +482,7 @@ function series kmeans_sil_samples (const bundle Model, const list xlist)
             matrix mask_k = (cluster_id .= k)
             if sum(mask_k) > 0
                 matrix other_points = selifr(features, mask_k)
-                matrix dists_other = distance(features[i,], Model.distance_type, other_points)
+                matrix dists_other = compute_distance(features[i,], Model.distance_type, other_points)
                 scalar mean_other_distance = sum(dists_other) / nelem(dists_other)
                 if mean_other_distance < b_i
                     b_i = mean_other_distance  # update the "neigboring cluster"
