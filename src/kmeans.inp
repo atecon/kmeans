@@ -200,10 +200,8 @@ function void add_variations (const matrix features, bundle *self)
     /* Add various variation statistics.
     return: void */
 
-    self.total_ssq = sumc(distance(features,\
-                                   self.distance_type,\
-                                   meanc(features))\
-                                    .^2)
+    matrix distances_from_mean = compute_distance(features, self.distance_type, meanc(features))
+    self.total_ssq = sumc(distances_from_mean.^2)
 
     bundle B = within_cluster_variation(self.distances, self.cluster_id)
     scalar self.within_variation_avg = B["sum_of_avg_variation"]
