@@ -114,7 +114,7 @@ function series kmeans_predict (const list xlist "Features",
 
     errorif(sum(missing(xlist)), "Some features have missing values. Please drop these first.")
 
-    matrix distances = distance({xlist}, self.distance_type, self.centroids)
+    matrix distances = compute_distance({xlist}, self.distance_type, self.centroids)
     series cluster_id = iminr(distances)
 
     return cluster_id
