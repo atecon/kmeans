@@ -160,10 +160,10 @@ Compute the silhouette sample value for each observation in the fitted kmeans mo
 ## kmeans_sil_score
 
 ```
-kmeans_sil_score (bundle Model, list xlist, bool global[FALSE])
+kmeans_sil_score (bundle Model, list xlist, bool global[TRUE])
 ```
 
-Compute the mean silhouette score for all samples in the fitted kmeans model if the optional parameter `global` is set to `TRUE`. The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar. If `global` is set to `FALSE`, the mean silhouette score is computed for each cluster separately.
+Compute the mean silhouette score for all samples in the fitted kmeans model if the optional parameter `global` is set to `TRUE` (default). The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar. If `global` is set to `FALSE`, the mean silhouette score is computed for each cluster separately.
 
 **Reference:** https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html
 
@@ -203,10 +203,11 @@ Create a silhouette plot for the fitted kmeans model. Each cluster is plotted se
 
 # Changelog
 
-* **v0.6 (July 2025)**
+* **v0.6 (August 2025)**
     * Add new silhouette functions: `kmeans_sil_samples()`, `kmeans_sil_score()`, and `kmeans_sil_plot()`
+    * Bugifx: Correctly handle the case for the "mahalanobis" distance metric in the `compute_distance()` function.
     * GUI dialog: Add option to plot silhouette analysis and general improvements
-    * raise minimum version of gretl to 2023c
+    * Raise minimum version of gretl to 2023c
 
 * **v0.5 (February 2025)**
     * Bugfix: in case of a single cluster, switch to "random" initializer as "pca" would fail; throw error if pca initializer is called for a single cluster
