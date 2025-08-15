@@ -78,6 +78,35 @@ function matrix init_centroids_by_pca (const matrix features,
 end function
 
 
+function matrix compute_distance (const matrix features,
+                                  const string distance_type,
+                                  const matrix centroids)
+    /* Compute distance between two matrices.
+    return: Matrix of distances.*/
+
+    if $version >= 20252
+        matrix ret = distance(features, distance_type, centroids)
+        return ret
+    endif
+
+    if distance_type == "mahalanobis"
+        /* Before version 20252, the distance() function did not treat the
+           3rd argument consistently with the other metrics for the "mahalanobis" case.*/
+        scalar p = rows(centroids)
+        matrix ret = zeros(m, p)
+        matrix C = cholesky(mcov(features))'
+        matrix z1n = zeros(1, cols(features))
+        loop j=1..p
+            ret[,j] = distance((features .- centroids[j,]) / C, "euclidean", z1n)
+        endloop
+    else
+        matrix ret = distance(features, distance_type, centroids)
+    endif
+
+    return ret
+end function
+
+
 function series kmeans_predict (const list xlist "Features",
                                 const bundle self)
     /* Predict cluster belonging for a given model.
