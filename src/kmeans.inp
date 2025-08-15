@@ -272,7 +272,6 @@ function bundle compute_kmeans (const bundle self, const matrix features)
             matrix centroids = compute_centroids(features, new_cluster_id)
             current_cluster_id = new_cluster_id
             matrix min_distances = minr(all_distances)  # select minimum from all
-
             iter++
         else
             Model.error = TRUE
@@ -328,8 +327,8 @@ function bundle within_cluster_variation (const matrix distances,
 end function
 
 
-function matrix centroids (const matrix features,
-                           const matrix cluster_id)
+function matrix compute_centroids (const matrix features,
+                                   const matrix cluster_id)
     /* Compute centroids (means) for each cluster.
     return: "n_clusters by 1+cols(features)" matrix, The i-th row corresponds to the i-th cluster; each column refers to the centroid (mean) value for each respective feature. */
 
@@ -431,6 +430,7 @@ function matrix	kmeans_screeplot (const list xlist "Features",
 
     mplot = mreverse(results, TRUE)
     print mplot
+
     plot mplot
         options with-lines fit=none @fsize_cmd
         literal set ylabel "Total within variation (inertia)"
