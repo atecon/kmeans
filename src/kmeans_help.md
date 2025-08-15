@@ -205,7 +205,7 @@ Create a silhouette plot for the fitted kmeans model. Each cluster is plotted se
 
 * **v0.6 (August 2025)**
     * Add new silhouette functions: `kmeans_sil_samples()`, `kmeans_sil_score()`, and `kmeans_sil_plot()`
-    * Bugifx: Correctly handle the case for the "mahalanobis" distance metric in the `compute_distance()` function.
+    * Bugifx: Correctly handle the case for the "mahalanobis" distance metric in the `compute_distance()` function. (Kudos to Allin Cottrell for reporting and providing a fix)
     * GUI dialog: Add option to plot silhouette analysis and general improvements
     * Raise minimum version of gretl to 2023c
 
