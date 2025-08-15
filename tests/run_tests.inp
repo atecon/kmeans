@@ -16,14 +16,21 @@ loop i=1..cols(m)
 endloop
 
 bundles Params = null
-Params = Params + _(initializer = "random",\
-                    n_clusters = 2,\
-                    expected_values = 2,\
-                    expected_nobs = $nobs)
-Params = Params + _(initializer = "random",\
-                    n_clusters = 4,\
-                    expected_values = 4,\
-                    expected_nobs = $nobs)
+Params = Params + _(initializer = "random",
+                    n_clusters = 2,
+                    expected_values = 2,
+                    expected_nobs = $nobs,
+                    distance_type = "euclidean")
+Params = Params + _(initializer = "random",
+                    n_clusters = 4,
+                    expected_values = 4,
+                    expected_nobs = $nobs,
+                    distance_type = "euclidean")
+Params = Params + _(initializer = "pca",
+                    n_clusters = 4,
+                    expected_values = 4,
+                    expected_nobs = $nobs,
+                    distance_type = "mahalanobis")
 
 function void test_initialize_clusters (const list L, const bundles P)
     print "Start testing function initialize_clusters()."
@@ -31,9 +38,13 @@ function void test_initialize_clusters (const list L, const bundles P)
     matrix x = {L}
 
     loop foreach i P
+        printf "Testing with initializer=%s, n_clusters=%d, distance_type=%s\n",
+          P[i].initializer, P[i].n_clusters, P[i].distance_type
+
         # Given
-        bundle Input = _(initializer = P[i].initializer,\
-                         n_clusters = P[i].n_clusters)
+        bundle Input = _(initializer = P[i].initializer,
+                         n_clusters = P[i].n_clusters,
+                         distance_type = P[i].distance_type)
 
         # When
         matrix actual = initialize_clusters(x, Input)
@@ -47,6 +58,7 @@ function void test_initialize_clusters (const list L, const bundles P)
     endloop
 end function
 test_initialize_clusters(L, Params)
+
 
 
 
@@ -71,8 +83,8 @@ Params = Params + _(features = features,\
                                                     "Centroid=3")\
                     )
 
-function void test_centroids (const bundles P)
-    print "Start testing function centroids()."
+function void test_compute_centroids (const bundles P)
+    print "Start testing function compute_centroids()."
 
     loop foreach i P
         # Given
@@ -80,7 +92,7 @@ function void test_centroids (const bundles P)
         expected_centroids = vec(P[i].expected_centroids)
 
         # When
-        matrix actual = centroids(P[i].features, P[i].cluster_id)
+        matrix actual = compute_centroids(P[i].features, P[i].cluster_id)
         strings actual_row_labels = rnameget(actual)
         scalar actual_n_centroids = rows(actual)
         actual = vec(actual)
@@ -95,7 +107,7 @@ function void test_centroids (const bundles P)
         endloop
     endloop
 end function
-test_centroids(Params)
+test_compute_centroids(Params)
 
 
 
@@ -188,8 +200,25 @@ catch kbun = kmeans_fit(P, n_groups, _(verbose=2))
 assert($error != FALSE) # Error expected
 
 
+######################
+print "Test case from Jack..."
+print "...using mahalanobis distance and random initializer"
+######################
+open mroz87.gdt --quiet
+list X = 5..8
+bundle Model = kmeans_fit(X, 3, _(distance_type = "mahalanobis",
+                            initializer = "random"))
+
+######################
+print "Test case from Jack..."
+print "...using mahalanobis distance and pca initializer"
+######################
+open mroz87.gdt --quiet
+list X = 5..8
+bundle Model = kmeans_fit(X, 3, _(distance_type = "mahalanobis",
+                            initializer = "pca"))
 
 
 
-print "Finished all tests succesfully."
+print "Finished all tests successfully."
 quit
