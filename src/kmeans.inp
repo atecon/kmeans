@@ -407,7 +407,7 @@ function matrix	kmeans_screeplot (const list xlist "Features",
     /* Create a scree plot. */
 
     if !exists(opts)
-        bundle opts = defbundle()
+        bundle opts = _()
     endif
     bundle self = set_bundle_and_get_defaults(xlist, opts)
 
@@ -533,11 +533,15 @@ function numeric kmeans_sil_score (const bundle Model,
 end function
 
 
-function void kmeans_sil_plot(const bundle Model,
-                              const list xlist,
-                              const bundle opts[null])
+function void kmeans_sil_plot (const bundle Model,
+                               const list xlist,
+                               const bundle opts[null])
     /* Create a silhouette plot for the fitted kmeans model.
        Each cluster is plotted separately. */
+
+    if !exists("opts")
+       bundle opts = _()
+    endif
 
     matrix silhouette_samples = {kmeans_sil_samples(Model, xlist)}
     scalar n_clusters = Model.n_clusters
