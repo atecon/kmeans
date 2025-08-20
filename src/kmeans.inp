@@ -84,14 +84,10 @@ function matrix compute_distance (const matrix features,
     /* Compute distance between two matrices.
     return: Matrix of distances.*/
 
-    if $version >= 20252
-        matrix ret = distance(features, distance_type, centroids)
-        return ret
-    endif
-
-    if distance_type == "mahalanobis"
+    if $version < 20252 && distance_type == "mahalanobis"
         /* Before version 20252, the distance() function did not treat the
            3rd argument consistently with the other metrics for the "mahalanobis" case.*/
+        scalar m = rows(features)
         scalar p = rows(centroids)
         matrix ret = zeros(m, p)
         matrix C = cholesky(mcov(features))'
