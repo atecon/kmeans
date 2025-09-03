@@ -1,6 +1,6 @@
 PKG = kmeans
 
-$(PKG).gfn: $(PKG).inp $(PKG).spec $(PKG)_sample.inp
+$(PKG).gfn: $(PKG).inp $(PKG).spec $(PKG)_sample.inp $(PKG)_help.md
 	gretlcli --makepkg $(PKG).inp
 
 
